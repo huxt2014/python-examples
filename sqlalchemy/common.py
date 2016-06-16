@@ -1,5 +1,4 @@
 
-
 # filter condition in where clause ##########################
 
 ## single condition
@@ -48,5 +47,6 @@ from sqlalchemy.sql import func
 
 Session.query(func.now())       # select now()
 Session.query(func.any_func())  # select any_func()
+
 
 

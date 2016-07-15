@@ -6,7 +6,7 @@ and other schema-level objects. These objects are at the core of three major
 types of operations: SQL DDL, constructing SQL queries, and expressing 
 information about structures that already exist within the database.
     A key feature of SQLAlchemy’s database metadata constructs is that they are
-designed to be used in a declarative style. Alse it is most intuitive to those
+designed to be used in a declarative style. Also it is most intuitive to those
 who have some background in creating real schema generation scripts.
     MetaData is a thread-safe object for read operations. Construction of new 
 tables within a single MetaData object, either explicitly or via reflection, may
@@ -127,6 +127,12 @@ evemt.listen(metadata, 'after_create',
              DDL('alter table ...').execute_if(dialect='postgresql'))
 
 
+# type ########################################################
 
+## for mysql dialect
+from sqlalchemy.dialects.mysql import (VARCHAR, INTEGER, DATETIME, BOOLEAN,
+                                       TEXT)
 
+## dumps automatically
+from sqlalchemy.types import PickleType
 

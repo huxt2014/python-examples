@@ -30,34 +30,32 @@ class User(Base):
     fullname = Column(String)
     password = Column(String)
 
+
 ## mapping a user-defined class to a table explicitly
 class User(Base):
     __table__ = user_table
     id = user_table.c.id
     name = user_table.c.user_name            # a column with different name
 
-## use common mixin
-class Mixin(object):
-    id = Column(Integer, primary_key=True)
-    
-class MyModel(Mixin, Base):
-    name = Column(String(1000))
 
 ## augment the Base
+##     Every class inherit Base will has its own properties with the same name
+## as the properties in Base
 class Base(object):
     id = Column(Integer, primary_key=True)
 
 Base = declarative_base(cls=Base)
 
-class MyModel(Base):
-    name = Column(String(1000))
-    
+
 ## use declared_attr
 class MyModel(Base):
-    
     @declared_attr
     def __tablename__(cls):
         return cls.__name__.lower()
+    
+    @declared_attr
+    def id(cls):
+        return Column(Integer)
 
 
 
@@ -89,6 +87,121 @@ mapper(User, user)
 mapper(User, user_table, properties={'id': user_table.c.id,
                                      'name': user_table.c.user_name,
                                      })
+
+
+
+# Map relationship #############################################
+#     When using a bidirectional relationship, elements added in one direction 
+# automatically become visible in the other direction. This behavior occurs 
+# based on attribute on-change events and is evaluated in Python, without using 
+# any SQL
+
+## one to many relationship
+##     The tag of primary_key and foreign_key is required.
+##     Relationship in on class but not in the other is permitted.
+##     Many to one is similar
+class User(Base):
+    __tablename__ = 'user'
+    ID = Column(Integer, primary_key=True)
+    ADDRESSES = relationship('Address', back_populates='USER')
+
+class Address():
+    __tablename__ = 'address'
+    ID = Column(Integer, primary_key=True)
+    USER_ID = Column(Integer, ForeignKey('User.ID'))
+    USER = relationship('User', back_populates='ADDRESSES')
+
+
+## one to one
+##     the uselist flag indicates the relationship is a scalar attribute
+class User(Base):
+    __tablename__ = 'user'
+    ID = Column(Integer, primary_key=True)
+    ADDRESS = relationship('Address', uselist=False, back_populates='USER')
+
+class Address():
+    __tablename__ = 'address'
+    ID = Column(Integer, primary_key=True)
+    USER_ID = Column(Integer, ForeignKey('User.ID'))
+    USER = relationship('User', back_populates='ADDRESS')
+
+
+## many to many using secondary argument
+association_table = Table('association', Base.metadata,
+    Column('user_id', Integer, ForeignKey('user.id')),
+    Column('address_id', Integer, ForeignKey('address.id'))
+)
+
+class User(Base):
+    __tablename__ = 'user'
+    ID = Column(Integer, primary_key=True)
+    ADDRESSES = relationship('Address', secondary=association_table)
+
+class Address():
+    __tablename__ = 'address'
+    ID = Column(Integer, primary_key=True)
+    
+user.ADDRESSES.remove(someaddress)  # delete from secondary table automatically
+session.delete(someaddress)        # whether delete from secondary table depends on the configuration
+
+
+## many to many using association Object
+class Association(Base):
+    __tablename__ = 'association'
+    USER_ID = Column(Integer, ForeignKey('user.ID'), primary_key=True)
+    ADDRESS_ID = Column(Integer, ForeignKey('address.ID'), primary_key=True)
+    EXTRA_DATA = Column(Integer)
+    ADDRESS = relationship('Address')
+    
+class User(Base):
+    __tablename__ = 'user'
+    ID = Column(Integer, primary_key=True)
+    ADDRESSES = relationship('Association')
+
+class Address():
+    __tablename__ = 'address'
+    ID = Column(Integer, primary_key=True)
+
+
+## use foregin_keys when no foreign key or multiple foreign keys
+class Address():
+    __tablename__ = 'address'
+    ID = Column(Integer, primary_key=True)
+    USER_ID = Column(Integer)
+    USER = relationship('User', foreign_keys=[USER_ID])
+    
+
+## Specifying Alternate Join Conditions
+##     The default behavior of relationship() is joining two tables using 
+## primary key columns on one side and foreign key columns on the other.
+class Address():
+    __tablename__ = 'address'
+    ID = Column(Integer, primary_key=True)
+    USER_ID = Column(Integer)
+    USER = relationship('User', foreign_keys=[USER_ID],
+                        primaryjoin='and_(User.ID==Address.USER_ID,'
+                                         'Address.STATUS=1)')
+    
+
+
+# Map inheritance ##############################################
+
+
+
+
+# use mixin ####################################################
+
+## Basic mixin
+class Mixin(object):
+    id = Column(Integer, primary_key=True)
+    
+class MyModel(Mixin, Base):
+    name = Column(String(1000))
+
+
+## relationship in mixin
+
+
 
 
 # inspect table #################################################

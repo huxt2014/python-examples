@@ -14,8 +14,7 @@ instances of InstrumentedAttribute, with more functions added.
 
 # Declarative Mapping #########################################
 
-## simple mapping
-##     define the user-defined class, describe the table metadata and do mapping 
+## define the user-defined class, describe the table metadata and do mapping 
 ## at once.
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String
@@ -28,7 +27,8 @@ class User(Base):
     id = Column(Integer, primary_key=True)   # map to a column named 'id'
     name = Column('user_name', String)       # map to a column named 'user_name'
     fullname = Column(String)
-    password = Column(String)
+
+User.password = Column(String)               # add a column later
 
 
 ## mapping a user-defined class to a table explicitly
@@ -68,11 +68,11 @@ from sqlalchemy.orm import mapper
 metadata = MetaData()
 
 user = Table('user', metadata,
-            Column('id', Integer, primary_key=True),
-            Column('name', String(50)),
-            Column('fullname', String(50)),
-            Column('password', String(12))
-        )
+             Column('id', Integer, primary_key=True),
+             Column('name', String(50)),
+             Column('fullname', String(50)),
+             Column('password', String(12))
+             )
 
 class User(object):
     def __init__(self, name, fullname, password):
@@ -102,28 +102,28 @@ mapper(User, user_table, properties={'id': user_table.c.id,
 ##     Many to one is similar
 class User(Base):
     __tablename__ = 'user'
-    ID = Column(Integer, primary_key=True)
-    ADDRESSES = relationship('Address', back_populates='USER')
+    id = Column(Integer, primary_key=True)
+    addresses = relationship('Address', back_populates='user')
 
 class Address():
     __tablename__ = 'address'
-    ID = Column(Integer, primary_key=True)
-    USER_ID = Column(Integer, ForeignKey('User.ID'))
-    USER = relationship('User', back_populates='ADDRESSES')
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('user.id'))
+    user = relationship('User', back_populates='addresses')
 
 
 ## one to one
 ##     the uselist flag indicates the relationship is a scalar attribute
 class User(Base):
     __tablename__ = 'user'
-    ID = Column(Integer, primary_key=True)
-    ADDRESS = relationship('Address', uselist=False, back_populates='USER')
+    id = Column(Integer, primary_key=True)
+    address = relationship('Address', uselist=False, back_populates='user')
 
 class Address():
     __tablename__ = 'address'
-    ID = Column(Integer, primary_key=True)
-    USER_ID = Column(Integer, ForeignKey('User.ID'))
-    USER = relationship('User', back_populates='ADDRESS')
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('user.id'))
+    user = relationship('User', back_populates='address')
 
 
 ## many to many using secondary argument
@@ -134,41 +134,38 @@ association_table = Table('association', Base.metadata,
 
 class User(Base):
     __tablename__ = 'user'
-    ID = Column(Integer, primary_key=True)
-    ADDRESSES = relationship('Address', secondary=association_table)
+    id = Column(Integer, primary_key=True)
+    addresses = relationship('Address', secondary=association_table)
 
 class Address():
     __tablename__ = 'address'
-    ID = Column(Integer, primary_key=True)
-    
-user.ADDRESSES.remove(someaddress)  # delete from secondary table automatically
-session.delete(someaddress)        # whether delete from secondary table depends on the configuration
-
+    id = Column(Integer, primary_key=True)
 
 ## many to many using association Object
 class Association(Base):
     __tablename__ = 'association'
-    USER_ID = Column(Integer, ForeignKey('user.ID'), primary_key=True)
-    ADDRESS_ID = Column(Integer, ForeignKey('address.ID'), primary_key=True)
-    EXTRA_DATA = Column(Integer)
-    ADDRESS = relationship('Address')
+    user_id = Column(Integer, ForeignKey('user.id'), primary_key=True)
+    address_id = Column(Integer, ForeignKey('address.id'), primary_key=True)
+    other_column = Column(Integer)
+    address = relationship('Address')
+    user = relationship('User')
     
 class User(Base):
     __tablename__ = 'user'
-    ID = Column(Integer, primary_key=True)
-    ADDRESSES = relationship('Association')
+    id = Column(Integer, primary_key=True)
+    associations = relationship('Association')
 
 class Address():
     __tablename__ = 'address'
-    ID = Column(Integer, primary_key=True)
-
+    id = Column(Integer, primary_key=True)
+    associations = relationship('Association')
 
 ## use foregin_keys when no foreign key or multiple foreign keys
 class Address():
     __tablename__ = 'address'
-    ID = Column(Integer, primary_key=True)
-    USER_ID = Column(Integer)
-    USER = relationship('User', foreign_keys=[USER_ID])
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer)
+    user = relationship('User', foreign_keys=[user_id])
     
 
 ## Specifying Alternate Join Conditions
@@ -176,18 +173,47 @@ class Address():
 ## primary key columns on one side and foreign key columns on the other.
 class Address():
     __tablename__ = 'address'
-    ID = Column(Integer, primary_key=True)
-    USER_ID = Column(Integer)
-    USER = relationship('User', foreign_keys=[USER_ID],
-                        primaryjoin='and_(User.ID==Address.USER_ID,'
-                                         'Address.STATUS=1)')
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer)
+    user = relationship('User', foreign_keys=[USER_ID],
+                        primaryjoin='and_(User.id==Address.user_id,'
+                                         'Address.status==1)')
     
 
 
 # Map inheritance ##############################################
 
+## single table inheritance
+class Employee(Base):
+    __tablename__ = 'employee'
+    id = Column(Integer, primary_key=True)
+    name = Column(String(50))
+    type = Column(String(20))
+    
+    __mapper_args__ = {
+        'polymorphic_on':type,
+        'polymorphic_identity':'employee'
+    }
 
+class Manager(Employee):
+    __mapper_args__ = {
+        'polymorphic_identity':'manager'
+    }
+    
+    @declared_attr
+    def identical_column(cls):
+        return Employee.__table__.c.get('identical_column', Column(Integer))
 
+class Engineer(Employee):
+    __mapper_args__ = {
+        'polymorphic_identity':'engineer'
+    }
+    
+    @declared_attr
+    def identical_column(cls):
+        # map a column that already exists.
+        return Employee.__table__.c.get('identical_column', Column(Integer))
+    
 
 # use mixin ####################################################
 

@@ -48,8 +48,8 @@ user = Table('user', meta,
              autoload=True)
 
 ## reflect all tables at once
-meta.reflect(bind=engine)
-meta.reflect(views=True)
+meta.reflect(bind=engine, views=True)
+
 
 
 

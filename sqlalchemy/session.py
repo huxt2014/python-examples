@@ -44,7 +44,8 @@ State Management
 
 # create a session ####################################
 
-## get session factory and keeping configuration
+## get session factory and keeping configuration. Generally, the session factory
+## reside in the application's global scope.
 from sqlalchemy.orm import sessionmaker
 Session = sessionmaker(bind=engine)
 
@@ -90,13 +91,9 @@ session.autoflush = False           # disable auto flush
 
 ## roll back
 ##     All transactions are rolled back and all connections returned to the 
-## connection pool, unless the Session was bound directly to a Connection,
-##     Objects which were initially in the pending state when they were added 
-## are expunged, corresponding to their INSERT statement being rolled back. The 
-## state of their attributes remains unchanged.
+## connection pool, unless the Session was bound directly to a Connection.
 ##     Objects which were marked as deleted are promoted back to the persistent 
 ## state, corresponding to their DELETE statement being rolled back.
-##     All objects not expunged are fully expired
 session.rollback()
 
 ## commit

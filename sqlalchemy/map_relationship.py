@@ -90,6 +90,21 @@ class Child(Base):
     __tablename__ = 'child'
     id = Column(Integer, primary_key=True)
     as_parents = relationship('Association')
+    
+## Self-Referential with foreign keys
+node_to_node = Table("node_to_node", Base.metadata,
+    Column("left_node_id", Integer, ForeignKey("node.id"), primary_key=True),
+    Column("right_node_id", Integer, ForeignKey("node.id"), primary_key=True)
+)
+
+class Node(Base):
+    __tablename__ = 'node'
+    id = Column(Integer, primary_key=True)
+    right_nodes = relationship("Node",
+                        secondary=node_to_node,
+                        primaryjoin=id==node_to_node.c.left_node_id,
+                        secondaryjoin=id==node_to_node.c.right_node_id,
+                        backref="left_nodes")
 
 
 ###############################################################################
@@ -123,6 +138,23 @@ class Child():
                           primaryjoin='(Parent.id==Child.parent_id)&('
                                        'Parent.status==1)')
 
+## Self-Referential without foreign keys
+from sqlalchemy.orm import foreign
+node_to_node = Table("node_to_node", Base.metadata,
+    Column("left_node_id", Integer, primary_key=True),
+    Column("right_node_id", Integer, primary_key=True)
+)
+
+class Node(Base):
+    __tablename__ = 'node'
+    id = Column(Integer, primary_key=True)
+    right_nodes = relationship("Node",
+                        secondary=node_to_node,
+                        primaryjoin=id==node_to_node.c.left_node_id,
+                        secondaryjoin=id==foreign(node_to_node.c.right_node_id),
+                        foreign_keys=[node_to_node.c.left_node_id],
+                        backref="left_nodes")
+    
 
 ###############################################################################
 ########                 Adjacency List Relationships                  ########

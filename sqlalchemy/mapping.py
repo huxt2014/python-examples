@@ -72,11 +72,23 @@ class Parent(Base):
 # these arguments will be passed to table constructor
 class Child(Base):
     __table_args__ = (
-            ForeignKeyConstraint('parent_id', 'parent.id'),
             UniqueConstraint('col'),
-            {'mysql_engine': 'InnoDB'}
+            {'autoload': True,
+             'mysql_engine': 'InnoDB',      # dialect specific augement
+             'mysql_charset': 'utf8',
+             'mysql_collate': 'utf8_bin'}
             )
 
+###############################################################################
+########                       constraints                             ########
+###############################################################################
+class Child(Base):
+    __table_args__ = (
+            PrimaryKeyConstraint('col1', 'col2', name='pk_child'),
+            ForeignKeyConstraint(('parent_id',), ('parent.id',) ),
+            UniqueConstraint('col')
+            )
+    
 
 ###############################################################################
 ########               SQL expression as attribute                     ########

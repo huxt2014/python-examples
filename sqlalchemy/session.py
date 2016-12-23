@@ -36,7 +36,7 @@ and refresh the identity map if necessary.
     query.get() get objects from identity map and no query is issued.
 
 concurrency
-    An session object, and all objects associated with is should be only used in
+    An session object, and all objects associated with it should be only used in
 a single thread at a time.
 
 State Management

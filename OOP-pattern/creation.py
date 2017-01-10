@@ -1,6 +1,6 @@
 '''
     Some pattern aren't really needed for Python at all. This is because the
-original design patterns were p6rimarily created for the C++ language and needed
+original design patterns were primarily created for the C++ language and needed
 to work around some of that language's limitations. Python doesn't have those
 limitations.
 '''
@@ -11,7 +11,7 @@ limitations.
             
 class FactoryMeta(type):
     """
-    Implement factory pattern using metaclass.
+    Class that use this meta act as factory class
     """
     def __call__(cls, *args, **kwargs):
         
@@ -22,6 +22,23 @@ class FactoryMeta(type):
     
     cls_map = {'list': list,
                'tuple': tuple}
+    
+
+class AbstractLoop(object):
+    """
+    Factory class using __new__
+    """
+    
+    def __new__(cls, *args, **kwargs):
+        concrete_loop = LoopCls
+        return object.__new__(concrete_loop, *args, **kwargs)
+
+
+def get_instance(class_str, *args, **kwargs):
+    '''
+    Factory method pattern
+    '''
+    return globals()[class_str](*args, **kwargs)
 
 
 ###############################################################################

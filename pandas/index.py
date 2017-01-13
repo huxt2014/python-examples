@@ -1,8 +1,7 @@
 
 
-import numpy as np
 import pandas as pd
-from pandas import Series, DataFrame, Panel
+from pandas import Series
 
 '''
     Index is immutable.
@@ -12,11 +11,10 @@ from pandas import Series, DataFrame, Panel
 #                               general index
 ###############################################################################
 # index can be not unique
-s = Series([1,2,3,4,5], index=['a','b','b','c','d'])
-s.index.is_unique        # return False
-s['a']                   # return 1
-s['b']                   # return [2,3]
-
+s = Series([1, 2, 3, 4, 5], index=['a', 'b', 'b', 'c', 'd'])
+assert s.index.is_unique is False        # return False
+assert s['a'] == 1                       # return 1
+assert s['b'] == [2, 3]                  # return [2,3]
 
 
 ###############################################################################
@@ -36,16 +34,16 @@ s['b']                   # return [2,3]
 
 # begin at '2016-11-1 00:00:05',
 # no later than '2016-11-30 23:59:59', freq='D'
-index = pd.date_range('2016-11-1 00:00:05', '2016-11-30 23:59:59')
+index1 = pd.date_range('2016-11-1 00:00:05', '2016-11-30 23:59:59')
 
 # begin at '2016-11-1 00:00:05', 20 periods, freq='D'
-index = pd.date_range('2016-11-1 00:00:05', periods=20)
+index2 = pd.date_range('2016-11-1 00:00:05', periods=20)
 
 # normalize to midnight
-index = pd.date_range('2016-11-1 00:00:05', periods=20, normalize=True)
+index3 = pd.date_range('2016-11-1 00:00:05', periods=20, normalize=True)
 
 # attach time zone
-index = pd.date_range('2016-11-1 00:00:05', periods=20, tz='UTC') 
+index4 = pd.date_range('2016-11-1 00:00:05', periods=20, tz='UTC')
 
 
 # date offset and its ################################
@@ -68,14 +66,13 @@ utc_index = naive_index.tz_localize('UTC')
 shanghai_index = utc_index.tz_convert('Asia/Shanghai')
 
 
+# Timestamp ###########################################
+ts.round('5min')
 
 ###############################################################################
 #                                PeriodIndex
 #     Elements in PeriodIndex are Pandas's Period objects.
 ###############################################################################
-
-
-
 
 
 ###############################################################################
@@ -92,10 +89,17 @@ d1 = index.get_level_values(1)
 d1.unique()
 
 
+###############################################################################
+#                             common method
+###############################################################################
+
+# set operation ###########################################
+index1.difference(index2)     # index1 - index2
+index1.union(index2)
+index1.intersaction(index2)
 
 
-
-#A number of string aliases are given to useful common time series frequencies.
+# A number of string aliases are given to useful common time series frequencies.
 # T, min    minutely frequency
 # H         hourly frequency
 

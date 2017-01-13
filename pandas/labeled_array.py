@@ -1,4 +1,9 @@
 
+import numpy as np
+import pandas as pd
+from pandas import Series, DataFrame, Panel
+import matplotlib.pyplot as plt
+
 '''
     Pandas has three data structure: Series, DataFrame and Panel. The latter
 acts as container for the former. Series has one axis, DataFrame has two axises
@@ -10,29 +15,25 @@ more or less equivalent. In pandas, the axes are intended to lend more semantic
 meaning to the data. For a particular data set there is likely to be a "right"
 way to orient the data.
     Selection, including index and slice, in pandas has four styles: native, loc 
-iloc and ix. Unlike Python native slice, slice by label include not only the begin one,
-but also the end one.
+iloc and ix. Unlike Python native slice, slice by label include not only the
+left bound, but also the right bound.
 '''
 
-import numpy as np
-import pandas as pd
-from pandas import Series, DataFrame, Panel
-import matplotlib.pyplot as plt
 
 ###############################################################################
-#                            Series                                           #
+#                                Series
 ###############################################################################
 
 # construct #######################################
-s = Series([1,3,5,np.nan,6,8])            # a Python list, get a default index.
-s = Series({'1': 1, '2':2})               # a Python dict, the key become index.
-s = Series(np.array([1,2,3,4]))           # a ndarray
-s = Series([1,2,3,4], index=['a', 'b', 'c', 'd'])   # specify the index
+s = Series([1, 3, 5, np.nan, 6, 8])       # a Python list, get a default index.
+s1 = Series({'1': 1, '2':2})              # a Python dict, the key become index.
+s2 = Series(np.array([1,2,3,4]))          # a ndarray
+s3 = Series([1, 2, 3, 4], index=['a', 'b', 'c', 'd'])   # specify the index
 
 # native index and slice ##########################
-s = Series([1,2,3,4], index=['a', 'b', 'c', 'd'])
-s['a'] == s[0]
-s['a':] == s[1:]                  #can use either label or offset
+s = Series([1, 2, 3, 4], index=['a', 'b', 'c', 'd'])
+assert s['a'] == s[0]
+assert s['a':] == s[1:]                  # can use either label or offset
 
 # vectorization ###################################
 # For arithmetic operation between two series, the element is aligned by label.
@@ -44,8 +45,8 @@ s1 > 2          # [False, False, True, True]
 np.exp(s1)
 
 # introspection ###################################
-s.values                   # return 1-d array
-s.index                    # return the index
+a = s.values                       # return 1-d array
+i = s.index                            # return the index
 s.name = 'name'
 s.index.name = 'name'
 s.index = other_index
@@ -58,8 +59,8 @@ plt.show()
 s.map(some_func)             # apply function to each element
 
 # sort #############################################
-new_s = s.sort_index()       # sort by index
-new_s = s.sort_values()      # sort by values
+new_s1 = s.sort_index()       # sort by index
+new_s2 = s.sort_values()      # sort by values
 
 # rank #############################################
 s = Series([4,1,2,5])
@@ -71,10 +72,10 @@ s.unique()
 
 
 ###############################################################################
-#                            DataFrame                                        #
-#    DateFrame is dict-like. df.keys() get all the column.
-#    When construct from dict-like index and columns can be used for reorder and
-#select row.
+#                                DataFrame
+#     DateFrame is dict-like. df.keys() get all the column.
+#     When construct from dict-like index and columns can be used for reorder
+# and select row.
 ###############################################################################
 
 # construct ########################################
@@ -86,16 +87,16 @@ df = pd.DataFrame(tuples, columns=['name', 'birth'])
 # from dict of list
 dict_data = {'name': ['Bob', 'John', 'Marry'],
              'birth': [1984, 1985, 1990]}
-df = pd.DataFrame(dict_data)            # default index, default column order
-df = pd.DataFrame(dict_data, 
-                  columns=['birth', 'name'])           # reorder columns
-df = pd.DataFrame(dict_data, 
-                  index=['one', 'two', 'three'])       # specify row label
+df1 = pd.DataFrame(dict_data)            # default index, default column order
+df2 = pd.DataFrame(dict_data,
+                   columns=['birth', 'name'])           # reorder columns
+df3 = pd.DataFrame(dict_data,
+                   index=['one', 'two', 'three'])       # specify row label
 
 # from dict of dict
 dict_data = {'name': {0:'Bob', 1:'John', 2:'Marry'},
              'birth': {0:1984, 1:1985, 2:1990}}
-df = pd.DataFrame(dict_data)
+df4 = pd.DataFrame(dict_data)
 
 # native index and slice ###########################
 
@@ -136,21 +137,27 @@ df.sort_values('col1')                # SQL-like order by
 df.head(5)
 df.tail(5)
 
+###############################################################################
+#                            Panel
+###############################################################################
+
+panel.axes
+
 
 ###############################################################################
 #                            index by loc and iloc                            #
-#    loc is primarily label based, but may also be used with a boolean array.
-#    iloc is primarily integer position based, but may also be used with a
-#boolean array.
-#    ix supports mixed integer and label based access. It is primarily label
-#based, but will fall back to integer positional access unless the corresponding
-#axis is of integer type.
-#    native index/slice can only be used on single axis. loc, iloc and ix can be
-#used on multiple axis.
-#    multi-axis selection is similar to Numpy. Indexer can be a single value,
-#slice object or list/ndarray.
-#    You may access an index on a Series, column on a DataFrame, and an item on
-#a Panel directly as an attribute
+#     loc is primarily label based, but may also be used with a boolean array.
+#     iloc is primarily integer position based, but may also be used with a
+# boolean array.
+#     ix supports mixed integer and label based access. It is primarily label
+# based, but will fall back to integer positional access unless the
+# corresponding axis is of integer type.
+#     native index/slice can only be used on single axis. loc, iloc and ix can
+# be used on multiple axis.
+#     multi-axis selection is similar to Numpy. Indexer can be a single value,
+# slice object or list/ndarray.
+#     You may access an index on a Series, column on a DataFrame, and an item on
+# a Panel directly as an attribute
 ###############################################################################
 
 
@@ -195,8 +202,8 @@ df.dropna(how='all')          # drop the rows whose all element are NaN
 df.fillna(value, inplace=True)
 
 # fill method #######################################
-df.fillna(method='ffill')  #propagate last valid observation forward to next NA
-df.fillna(method='bfill')  #use NEXT valid observation to fill gap
+df.fillna(method='ffill')  # propagate last valid observation forward to next NA
+df.fillna(method='bfill')  # use NEXT valid observation to fill gap
 
 
 ###############################################################################
@@ -204,7 +211,7 @@ df.fillna(method='bfill')  #use NEXT valid observation to fill gap
 ###############################################################################
 
 # down sampling #####################################
-dt_index=pd.date_range('2016-11-1 00:02:00', periods=12, freq='1min')
+dt_index = pd.date_range('2016-11-1 00:02:00', periods=12, freq='1min')
 s = Series(np.arange(12), index=dt_index)
 
 s.resample('5min', closed='left').sum()   # 00, 01, 02, 03, 04 as 00
@@ -214,7 +221,6 @@ s.resample('5min', closed='right').sum()  # 01, 02, 03, 04, 05 as 00
 s.groupby(lambda x: x.month).sum()
 
 # up sampling #######################################
-
 
 
 ###############################################################################
@@ -235,9 +241,6 @@ new_s = s.drop(['a', 'b'])
 ###############################################################################
 
 
-#iteration
+# iteration
 for col in df.columns:
     series = df[col]
-    
-    
-    

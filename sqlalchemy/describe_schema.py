@@ -30,6 +30,15 @@ engine = create_engine('db_url')
 
 ###############################################################################
 #                          describe explicitly
+# To represent a table, use the Table class. Its two primary arguments are the
+# table name, then the MetaData object which it will be associated with. The
+# remaining positional arguments are mostly Column objects describing each
+# column.
+
+# kwargs for Table
+# schema: The schema name for this table, which is required if the table resides
+#         in a schema other than the default selected schema for the engine's
+#         database connection.
 ###############################################################################
 
 # basic describe #######################################

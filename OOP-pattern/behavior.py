@@ -1,10 +1,11 @@
 
 
 ###############################################################################
-#                        replace observer with signal 
+#                        replace observer with signal/event
 ###############################################################################
 
 import blinker
+
 
 class Supervisor(object):
         
@@ -29,5 +30,5 @@ class Worker(object):
 
 
 s = Supervisor(1)
-workers = [Worker(i) for i in range(1,5)]
+workers = [Worker(i) for i in range(1, 5)]
 s.alarm()

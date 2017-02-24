@@ -24,49 +24,63 @@ left bound, but also the right bound.
 #                                Series
 ###############################################################################
 
-# construct #######################################
-s = Series([1, 3, 5, np.nan, 6, 8])       # a Python list, get a default index.
-s1 = Series({'1': 1, '2':2})              # a Python dict, the key become index.
-s2 = Series(np.array([1,2,3,4]))          # a ndarray
-s3 = Series([1, 2, 3, 4], index=['a', 'b', 'c', 'd'])   # specify the index
+# construct #################################################
+# a Python list, get a default index.
+s = Series([1, 3, 5, np.nan, 6, 8])
 
-# native index and slice ##########################
-s = Series([1, 2, 3, 4], index=['a', 'b', 'c', 'd'])
-assert s['a'] == s[0]
-assert s['a':] == s[1:]                  # can use either label or offset
+# a Python dict, the key become index.
+s1 = Series({'1': 1, '2': 2})
 
-# vectorization ###################################
-# For arithmetic operation between two series, the element is aligned by label.
-# The label will survive in the result
-s1 = Series([1,2,3,4], index=['a', 'b', 'c', 'd'])
-s2 = Series([2,3,4], index=['a', 'b', 'c'])
-s1 + s2         # [3,5,7,NaN]
-s1 > 2          # [False, False, True, True]
-np.exp(s1)
+# a ndarray
+s2 = Series(np.array([1, 2, 3, 4]))
 
-# introspection ###################################
-a = s.values                       # return 1-d array
-i = s.index                            # return the index
+# specify the index
+s3 = Series([1, 2, 3, 4], index=['a', 'b', 'c', 'd'])
+
+# native index and slice ####################################
+# can use either label or offset
+assert s3['a'] == s3[0]
+assert s3['a':] == s3[1:]
+
+# vectorization #############################################
+# For arithmetic operation between two series, the element is
+# aligned by label. The label will survive in the result
+s4 = Series([1, 2, 3, 4], index=['a', 'b', 'c', 'd'])
+s5 = Series([2, 3, 4], index=['a', 'b', 'c'])
+s4 + s5                   # [3,5,7,NaN]
+s4 > 2                    # [False, False, True, True]
+np.exp(s4)
+
+# introspection #############################################
+# get 1-d array
+a = s.values
+
+# get index
+i = s.index
+
+# assign name
 s.name = 'name'
-s.index.name = 'name'
-s.index = other_index
+
+# change index
+s.index = pd.Index(['A', 'B', 'C', 'D'])
 
 # plot
 s.plot()
 plt.show()
 
-# ufunc ############################################
-s.map(some_func)             # apply function to each element
+# ufunc ######################################################
+# apply function to each element
+s.map(lambda x: x*x)
 
-# sort #############################################
+# sort #######################################################
 new_s1 = s.sort_index()       # sort by index
 new_s2 = s.sort_values()      # sort by values
 
-# rank #############################################
-s = Series([4,1,2,5])
+# rank #######################################################
+s = Series([4, 1, 2, 5])
 s.rank()                     # return [3,1,2,4]
 
-# aggregation and statistic ########################
+# aggregation and statistic ##################################
 s.max()
 s.unique()
 
@@ -78,8 +92,7 @@ s.unique()
 # and select row.
 ###############################################################################
 
-# construct ########################################
-
+# construct ##################################################
 # from tuple list
 tuples = [('Bob', 1984), ('John', 1985), ('Marry', 1990)]
 df = pd.DataFrame(tuples, columns=['name', 'birth'])
@@ -87,35 +100,36 @@ df = pd.DataFrame(tuples, columns=['name', 'birth'])
 # from dict of list
 dict_data = {'name': ['Bob', 'John', 'Marry'],
              'birth': [1984, 1985, 1990]}
-df1 = pd.DataFrame(dict_data)            # default index, default column order
-df2 = pd.DataFrame(dict_data,
-                   columns=['birth', 'name'])           # reorder columns
-df3 = pd.DataFrame(dict_data,
-                   index=['one', 'two', 'three'])       # specify row label
+# default index, default column order
+df1 = pd.DataFrame(dict_data)
+# reorder columns
+df2 = pd.DataFrame(dict_data, columns=['birth', 'name'])
+# specify row label
+df3 = pd.DataFrame(dict_data, index=[0, 1, 2])
 
 # from dict of dict
-dict_data = {'name': {0:'Bob', 1:'John', 2:'Marry'},
-             'birth': {0:1984, 1:1985, 2:1990}}
+dict_data = {'name': {0: 'Bob', 1: 'John', 2: 'Marry'},
+             'birth': {0: 1984, 1: 1985, 2: 1990}}
 df4 = pd.DataFrame(dict_data)
 
-# native index and slice ###########################
 
-# index get column, only index by label.
-df['name']                   # get a column
-df[['name', 'birth']]        # get two columns
-df[0]                        # error
-df['name':]                  # error
+# native index and slice #####################################
+# index get column, index only by label.
+s_name = df['name']
+df_new = df[['name', 'birth']]
+s_0 = df[0]                             # error
+df_new2 = df['name':]                   # error
 
 # slice get rows, either offset and label can be used.
-df[1:]                       # several rows, by offset
-df['2016-11-11 00:00:00': '2016-11-11 08:00:00']       # by label
+df_new3 = df[1:]
+df_new4 = df['2016-11-11 00:00:00': '2016-11-11 08:00:00']
 
-# introspection ####################################
-df.dtypes                         # display dtypes for all columns
-df.info()                         # display dtypes and memory size
-df.values                         # to ndarray
+# introspection ##############################################
+s_type = df.dtypes            # display dtypes for all columns
+df.info()                     # display dtypes and memory size
+array_2d = df.values          # to ndarray
 
-# vectorization ####################################
+# vectorization ##############################################
 # the index and columns of the result is the union of the two origins'. 
 df1 + df2
 df1.add(df2, fill_value=0)            # fill NaN
@@ -124,16 +138,16 @@ df1.add(df2, fill_value=0)            # fill NaN
 df1 - s               # broadcast according row
 df1.sub(s, axis=0)    # match on axis 0 and broadcast according columns
 
-# ufunc ############################################
-np.sqrt(df)                           # apply function to each element
-df.apply(some_func, axis=0)           # apply function on each column or row
-df.applymap(some_func)                # apply function on each element
+# ufunc ######################################################
+np.sqrt(df)                           # on each element
+df.apply(lambda x: x.sum(), axis=0)   # on each column
+df.applymap(lambda x: x*x)            # on each element
 
-# sort #############################################
+# sort #######################################################
 df.sort_index()                       # sort by index
 df.sort_values('col1')                # SQL-like order by
 
-# aggregation and statistic ########################
+# aggregation and statistic ##################################
 df.head(5)
 df.tail(5)
 
@@ -141,7 +155,7 @@ df.tail(5)
 #                            Panel
 ###############################################################################
 
-panel.axes
+# panel.axes
 
 
 ###############################################################################
@@ -161,25 +175,30 @@ panel.axes
 ###############################################################################
 
 
-# loc style #########################################
-df.loc['2016-11-11 00:00:00']           # index get Series
-df.loc[['2016-11-11','2016-11-15']]     # index using list, get DataFrame
-df.loc['2016-11-11': '2016-11-15']      # slice return several rows as DataFrame
+# loc style ##################################################
+# get one row as Series
+s = df.loc['2016-11-11 00:00:00']
+
+# index using list return several rows as DataFrame
+sub_df = df.loc[['2016-11-11', '2016-11-15']]
+
+# slice return several rows as DataFrame
+sub_df2 = df.loc['2016-11-11': '2016-11-15']
 
 
-# iloc style #########################################
-df.iloc[1]
-df.iloc[[1,3]]
-df.iloc[1:3]
+# iloc style #################################################
+s3 = df.iloc[1]                    # one row
+sub_df3 = df.iloc[[1, 3]]           # several rows
+sub_df4 = df.iloc[1:3]             # several rows
 
-# ix stype ###########################################
-df.ix[1]
+# ix stype ###################################################
+s4 = df.ix[1]
 
-
-# multi-axis selection ###############################
-s.loc[indexer]
-df.loc[row_indexer, column_indexer]
-p.loc[item_indexer, major_indexer, minor_indexer]
+# multi-axis selection #######################################
+value = df.iloc[0, 0]
+s5 = df.iloc[:, 0]
+sub_df5 = df.iloc[:, 0:1]
+# p.loc[item_indexer, major_indexer, minor_indexer]
 
 
 ###############################################################################
@@ -188,20 +207,20 @@ p.loc[item_indexer, major_indexer, minor_indexer]
 # types, missing value is represented by NaT.
 ###############################################################################
 
-# checking, get the same shape result ###############
-fd['one'].isnull()              # return Series with Boolean element
-fd['one'].notnull()
+# checking, get the same shape result ########################
+df['one'].isnull()              # return Series with Boolean element
+df['one'].notnull()
 df.isnull()
 
-# drop NaN ##########################################
+# drop NaN ###################################################
 s.dropna()
 df.dropna()                   # drop all rows that contain one or more NaN
 df.dropna(how='all')          # drop the rows whose all element are NaN
 
-# set all NA to the same value ######################
+# set all #########NA to the same value ######################
 df.fillna(value, inplace=True)
 
-# fill method #######################################
+# fill method ################################################
 df.fillna(method='ffill')  # propagate last valid observation forward to next NA
 df.fillna(method='bfill')  # use NEXT valid observation to fill gap
 
@@ -210,17 +229,17 @@ df.fillna(method='bfill')  # use NEXT valid observation to fill gap
 #                                   Resample
 ###############################################################################
 
-# down sampling #####################################
+# down sampling ##############################################
 dt_index = pd.date_range('2016-11-1 00:02:00', periods=12, freq='1min')
 s = Series(np.arange(12), index=dt_index)
 
 s.resample('5min', closed='left').sum()   # 00, 01, 02, 03, 04 as 00
 s.resample('5min', closed='right').sum()  # 01, 02, 03, 04, 05 as 00
 
-# group by index function ###########################
+# group by index function ####################################
 s.groupby(lambda x: x.month).sum()
 
-# up sampling #######################################
+# up sampling ################################################
 
 
 ###############################################################################
@@ -229,17 +248,16 @@ s.groupby(lambda x: x.month).sum()
 
 # Reindex can be used to insert, remove or reorder rows/columns. If value not   
 # exists, NaN is set.
-s.reindex(a_list)
-df.reindex(row_index, columns=c_index)
+s = s.reindex([1, 0, 2])
+df = df.reindex([1, 0, 2], columns=['name', 'birth'])
 
 # drop row
-new_s = s.drop('a')
-new_s = s.drop(['a', 'b'])
+s_new = s.drop('a')
+s_new1 = s.drop(['a', 'b'])
 
 ###############################################################################
 #                            iteration                                        #
 ###############################################################################
-
 
 # iteration
 for col in df.columns:

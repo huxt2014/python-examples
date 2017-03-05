@@ -19,7 +19,6 @@
 # class, but not a class object.
 ##############################################################################
 
-
 class Meta(type):
 
     def __call__(cls, cls_name, supers, attr_dict):
@@ -39,7 +38,7 @@ class Meta(type):
 
     def __new__(mcs, cls_name, supers, attr_dict):
         """
-
+        called by __call__
         :param mcs: metaclass that passed to type
         :return: a class object that not initialized yet
         """
@@ -48,11 +47,28 @@ class Meta(type):
 
     def __init__(cls, cls_name, supers, attr_dict):
         """
-
+        called by __call__ after __new__. Here, cls.__class__ is Meta.
         :param cls: the class object that to be initialized
         """
         print('here is __init__')
         type.__init__(cls, cls_name, supers, attr_dict)
+
+
+class Meta2:
+    """
+    The instance of this class can act as metaclass.
+    """
+    def __init__(self):
+        pass
+
+    def __call__(self, cls_name, supers, attr_dict):
+        """
+        Should return a class object. Only triggered during class creation, but
+        not calling generated class.
+        """
+        # here, cls.__class__ is type, not Meta2.
+        cls = type(cls_name, supers, attr_dict)
+        return cls
 
 
 ##############################################################################
@@ -60,14 +76,15 @@ class Meta(type):
 ##############################################################################
 """
 1. Look up an attribute name explicitly from an instance I:
-    a. Search the __dict__ of all classes on the __mro__ found at I's __class__
+    a. Search the __dict__ of all classes on I.__class__.__mro__, which are
+       super classes.
     b. If a data descriptor was found in step a, call it and exit
     c. Else, return a value in the __dict__ of the instance I
     d. Else, call a nondata descriptor or return a value found in step a
 
 2. Look up an attribute name explicitly from a class C:
-    a. Search the __dict__ of all metaclasses on the __mro__ found at C's
-       __class__
+    a. Search the __dict__ of all classes on C.__class__.__mro__, which are
+       mata classes.
     b. If a data descriptor was found in step a, call it and exit
     c. Else, call a descriptor or return a value in the __dict__ of a class on
        C's own __mro__
@@ -80,6 +97,7 @@ class Meta(type):
    attribute is not found, and method __getattribute__ may be run for every
    attribute fetch,
 """
+
 
 ##############################################################################
 #                       intercept instance creation
@@ -97,7 +115,6 @@ class Meta(type):
 
 ##############################################################################
 
-
 class Foo(object):
 
     def __new__(cls, *args, **kwargs):
@@ -106,7 +123,7 @@ class Foo(object):
         instance is requested. The remaining arguments are all passed to
         __init__.
 
-        :return: any object
+        :return: any object, or invoke object.__new__
         """
         pass
 

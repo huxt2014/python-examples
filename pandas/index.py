@@ -85,12 +85,6 @@ ts = pd.Timestamp(datetime(2017, 2, 23, 10, 50, 23))
 ts.round('5min')
 
 ###############################################################################
-#                                PeriodIndex
-#     Elements in PeriodIndex are Pandas's Period objects.
-###############################################################################
-
-
-###############################################################################
 #                             Hierarchical index
 #     It enables you to store and manipulate data with an arbitrary number of
 # dimensions in lower dimensional data structures.
@@ -139,9 +133,25 @@ l1_index = l3_index.droplevel([0, 1])
 l2_index.unique()
 
 # change levels
-l3_index_n = l3_index.set_levels(['foo1', 'bar1'], level=1)
+l3_index_n = l3_index.set_levels(['foo1', 'bar1'], level=0)
 assert l3_index_n.levels[0] == pd.Index(['foo1', 'bar1'])
 
+# select row ##################################################
+# get a Series object, whose name is the row's index
+assert isinstance(df.iloc[0], pd.Series)
+
+# get several row, with l2_index
+df.xs('bar')
+
+# can be chained, or pass a tuple
+df.xs('bar').xs('one')
+df.xs(('bar', 'one'))
+
+
+###############################################################################
+#                                PeriodIndex
+#     Elements in PeriodIndex are Pandas's Period objects.
+###############################################################################
 
 ###############################################################################
 #                             common method

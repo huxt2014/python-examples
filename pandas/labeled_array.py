@@ -22,6 +22,12 @@ left bound, but also the right bound.
 
 ###############################################################################
 #                                Series
+#     A Series always has an index even if one is not specified. In this default
+# case, pandas will create an index that consists of sequential integers
+# starting from zero. This is by design, for the compatibility with numpy.
+#     Automatic alignment is arguably the most significant change that a Series
+# makes over ndarray. The pandas library will first align the two pandas objects
+# by the index labels and then apply the operation values with aligned labels.
 ###############################################################################
 
 # construct #################################################
@@ -38,7 +44,8 @@ s2 = Series(np.array([1, 2, 3, 4]))
 s3 = Series([1, 2, 3, 4], index=['a', 'b', 'c', 'd'])
 
 # native index and slice ####################################
-# can use either label or offset
+# can use either label or offset, but please always use labels
+# to avoid misunderstanding.
 assert s3['a'] == s3[0]
 assert s3['a':] == s3[1:]
 
@@ -51,6 +58,9 @@ s4 + s5                   # [3,5,7,NaN]
 s4 > 2                    # [False, False, True, True]
 np.exp(s4)
 
+# apply function to each element
+s.map(lambda x: x*x)
+
 # introspection #############################################
 # get 1-d array
 a = s.values
@@ -61,33 +71,69 @@ i = s.index
 # assign name
 s.name = 'name'
 
-# change index
-s.index = pd.Index(['A', 'B', 'C', 'D'])
+# length
+assert len(s) == s.size == s.shape[0]
+
+# number of element that a not NaN
+s.count()
+
+# get a array of unique values
+s.unique()
+
+# count(*) group by non-NaN value, get a Series
+s.value_counts()
+
+# aggregation and statistic
+s.max()
+s.mean()
+s.var()
+
+# location of the max element
+s.idxmax()
+
+# rank
+s = Series([4, 1, 2, 5])
+s.rank()                     # return [3,1,2,4]
 
 # plot
 s.plot()
 plt.show()
 
-# ufunc ######################################################
-# apply function to each element
-s.map(lambda x: x*x)
-
-# sort #######################################################
+# translate ##################################################
+# sort
 new_s1 = s.sort_index()       # sort by index
 new_s2 = s.sort_values()      # sort by values
 
-# rank #######################################################
-s = Series([4, 1, 2, 5])
-s.rank()                     # return [3,1,2,4]
+# reindex includes the following steps:
+# 1. Reordering existing data to match a set of labels.
+# 2. Inserting NaN markers where no data exists for a label.
+# 3. Possibly, filling missing data for a label using some type
+#    of logic
 
-# aggregation and statistic ##################################
-s.max()
-s.unique()
+# in-place modify ############################################
 
+# change index directly, the new index should
+# has the same length
+s.index = pd.Index(['A', 'B', 'C', 'D'])
+s.index = ['a', 'b', 'c', 'd']
+
+# add a new item
+s['e'] = 1
+
+# delete a item by label
+del(s['e'])
+
+# assign should has the same length
+s['c':] = [1, 2]
+
+# assign and broadcast
+s['c':] = 3
 
 ###############################################################################
 #                                DataFrame
-#     DateFrame is dict-like. df.keys() get all the column.
+#     DateFrame is dict-like. df.keys() get all the column. A DataFrame object
+# can be thought of as a dictionary-like container of one or more Series
+# objects.
 #     When construct from dict-like index and columns can be used for reorder
 # and select row.
 ###############################################################################
@@ -112,6 +158,10 @@ dict_data = {'name': {0: 'Bob', 1: 'John', 2: 'Marry'},
              'birth': {0: 1984, 1: 1985, 2: 1990}}
 df4 = pd.DataFrame(dict_data)
 
+# from dict of series
+s3 = Series([1, 2, 3, 4], index=['a', 'b', 'c', 'd'])
+s4 = Series([2, 3, 4], index=['a', 'b', 'c'])
+df5 = pd.DataFrame({'col1': s3, 'col2': s4})
 
 # native index and slice #####################################
 # index get column, index only by label.
@@ -120,36 +170,105 @@ df_new = df[['name', 'birth']]
 s_0 = df[0]                             # error
 df_new2 = df['name':]                   # error
 
+# property like
+s_name2 = df.name
+
 # slice get rows, either offset and label can be used.
 df_new3 = df[1:]
 df_new4 = df['2016-11-11 00:00:00': '2016-11-11 08:00:00']
 
 # introspection ##############################################
-s_type = df.dtypes            # display dtypes for all columns
-df.info()                     # display dtypes and memory size
-array_2d = df.values          # to ndarray
+# get shape
+assert df.shape == (3, 2)
+
+# get index
+assert isinstance(df.index, pd.Index)
+assert isinstance(df.columns, pd.Index)
+
+# display dtypes for all columns
+isinstance(df.dtypes, pd.Series)
+
+# display dtypes and memory size
+df.info()
+
+# to ndarray
+array_2d = df.values
+
+# aggregation and statistic
+df.head(5)
+df.tail(5)
+df.describe()
 
 # vectorization ##############################################
 # the index and columns of the result is the union of the two origins'. 
 df1 + df2
 df1.add(df2, fill_value=0)            # fill NaN
 
-# broadcast is similar with Numpy
+# broadcast is similar with Numpy. The set of columns
+# returned will be the union of the labels in the index of both
 df1 - s               # broadcast according row
 df1.sub(s, axis=0)    # match on axis 0 and broadcast according columns
 
-# ufunc ######################################################
+# ufunc
 np.sqrt(df)                           # on each element
 df.apply(lambda x: x.sum(), axis=0)   # on each column
 df.applymap(lambda x: x*x)            # on each element
 
-# sort #######################################################
+# in-place modify ############################################
+# change columns and index
+df.columns = ['birth1', 'name1']
+df.index = [10, 20, 30]
+df.index = pd.Index([10, 11, 12])
+
+# add column, Items in the Series that do not have a matching
+# label will be ignored, just like left join.
+new_c = Series([1, 2, 3, 4, 5])
+df['new_column'] = new_c
+df.insert(1, 'new_column_2', new_c)
+
+# replace column
+df['name'] = df.name*2
+
+# drop a column
+del(df['new_column'])
+df.pop('new_column')
+
+# insert/replace a row
+df.loc[100] = ['Marry', 1990]
+
+
+# translate ##################################################
+# Reindex can be used to insert, remove or reorder
+# rows/columns. If value not exists, NaN is set.
+df = df.reindex([1, 0, 2, 3], columns=['name', 'birth'])
+
+# reset index, abstract values in the index as a column
+df.reset_index()
+
+# set index, set a column as index, original index and column
+# will disappear.
+df.set_index('birth1')
+
+# change index and return a copy
+df.rename(index=['birth1', 'name1'])
+
+# drop a column/row, return a new df
+df.drop(['new_column'], axis=1)
+
+# add rows by append. may get duplicate index
+# return a new df, The resulting DataFrame will
+# consist of the union of the columns in both
+df.append(df)
+
+# concat, axis=0, like append
+pd.concat([df, df])
+
+# concat, axis=1, like join
+pd.concat([df, df], axis=1, join='inner')
+
+# sort
 df.sort_index()                       # sort by index
 df.sort_values('col1')                # SQL-like order by
-
-# aggregation and statistic ##################################
-df.head(5)
-df.tail(5)
 
 ###############################################################################
 #                            Panel
@@ -246,10 +365,6 @@ s.groupby(lambda x: x.month).sum()
 #                              other common operator
 ###############################################################################
 
-# Reindex can be used to insert, remove or reorder rows/columns. If value not   
-# exists, NaN is set.
-s = s.reindex([1, 0, 2])
-df = df.reindex([1, 0, 2], columns=['name', 'birth'])
 
 # drop row
 s_new = s.drop('a')

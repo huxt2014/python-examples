@@ -5,7 +5,7 @@ from datetime import datetime
 import pandas as pd
 import numpy as np
 from pandas import Series
-from pandas.tseries.offsets import Hour, Minute
+from pandas.tseries.offsets import Hour, Minute, BusinessDay
 
 
 '''
@@ -29,7 +29,8 @@ assert s['b'] == [2, 3]
 ###############################################################################
 #                               DatetimeIndex
 #     Elements in DatetimeIndex are Pandas's Timestamp objects. They are stored
-# as Numpy's datatime64[ns]. 
+# as Numpy's datatime64[ns]. Timestamp objects are generally interchangeable
+# with datetime objects
 #     If no time zone passed when constructed, we get a naive datetime index, 
 # and the scalar looks like 2016-11-01 00:00:00. If time zone is passed, for 
 # example 'UTC', we get a localized datetime index, and the scalar looks like
@@ -37,9 +38,21 @@ assert s['b'] == [2, 3]
 #     A localized datetime index can be convert to another time zone. For
 # example, convert a utc time 2016-11-01 00:00:00+00:00 to Asia/Shanghai, we get
 # 2016-11-01 08:00:00+08:00. They are the same time.
+#     Like any pandas index, DatetimeIndex can be used for various index
+# operations, such as data alignment, selection, and slicing.
 ###############################################################################
 
 # construct ##################################################
+# get time stamp
+ts = pd.Timestamp('2017-03-06')
+ts2 = pd.Timestamp('2017-03-06 17:30')
+ts3 = pd.Timestamp('17:30')    # current local date
+ts4 = pd.Timestamp('now')
+ts5 = pd.Timestamp(datetime(2017, 2, 23, 10, 50, 23))
+
+# get index automatically
+dates = ['2017-03-05', '2017-03-06']
+s = pd.Series([1, 2], index=pd.to_datetime(dates))
 
 # begin at '2016-11-1 00:00:05',
 # no later than '2016-11-30 23:59:59', freq='D'
@@ -54,12 +67,34 @@ index3 = pd.date_range('2016-11-1 00:00:05', periods=20, normalize=True)
 # attach time zone
 index4 = pd.date_range('2016-11-1 00:00:05', periods=20, tz='UTC')
 
+# select #####################################################
+index5 = pd.date_range('2014-11-1 00:00:05', '2016-11-30 23:59:59')
+s5 = pd.Series(0, index5)
 
-# date offset and its ########################################
-Hour(2) + Minute(30)
-'2h30min'                   # every two hours and thirty minutes
+# slice using partial date
+assert len(s5['2015']) == 365
+assert len(s5['2016-7': '2016-8']) == 62
 
-'WOM-3FRI'                  # every third Friday of each month
+# date offset ################################################
+# frequency strings are translated into an instance of the
+# pandas DateOffset object
+
+# '2h30min', every two hours and thirty minutes
+offset1 = Hour(2) + Minute(30)
+
+# every day
+offset2 = pd.DateOffset(days=1)
+
+# every third Friday of each month
+'WOM-3FRI'
+
+# Friday of each week
+'W-FRI'
+
+dt = datetime(2017, 3, 3)
+dt + offset1              # next 150 minutes
+dt + 2*BusinessDay(1)     # next two business days
+
 
 # shift ######################################################
 # from 2016-11-1 to 2016-11-30
@@ -72,17 +107,52 @@ index5.shift(1)
 index5.shift(1, freq='30min')
 
 # deal with timezone #########################################
-naive_index = pd.date_range('2016-11-1', periods=10, freq='H')
-utc_index = naive_index.tz_localize('UTC')
+# By default, pandas objects that are time zone-aware do not
+# utilize a timezone object for purposes of efficiency.
+native_ts = pd.Timestamp('2017-02-23')
+native_index = pd.date_range('2016-11-1', periods=10, freq='H')
+assert native_ts.tz is None
+assert native_index.tz is None
+assert native_index[0].tz is None
+
+# specify time zone
+utc_index = pd.date_range('2016-11-1', periods=10, freq='H',
+                          tz='UTC')
+utc_index2 = native_index.tz_localize('UTC')
 shanghai_index = utc_index.tz_convert('Asia/Shanghai')
 
 
 # Timestamp ##################################################
-# 2017-02-24 10:50:23
-ts = pd.Timestamp(datetime(2017, 2, 23, 10, 50, 23))
-
 # 2017-02-24 10:50:00
 ts.round('5min')
+
+
+###############################################################################
+#                                PeriodIndex
+#     Elements in PeriodIndex are Pandas's Period objects. Period allows you to
+# specify durations based on frequencies such as daily, weekly, and it will
+# provide a specific start and end Timestamp representing the specific bounded
+# interval of time.
+###############################################################################
+
+# construct ##################################################
+aug2016 = pd.Period('2016-08', freq='M')
+sep2016 = aug2016 + 1
+
+mp2016 = pd.period_range('2016-01-01', freq='M', periods=12)
+
+# inspect ####################################################
+assert isinstance(aug2016.start_time, pd.Timestamp)
+assert isinstance(aug2016.end_time, pd.Timestamp)
+
+# select #####################################################
+# select through a Period object or string.
+s_2016 = pd.Series(0, mp2016)
+assert s_2016['2016-01'] == s_2016[mp2016[0]]
+assert len(s_2016['2016-01': '2016-05']) == 5
+
+# partial select is allowed
+assert len(s_2016['2016']) == 12
 
 ###############################################################################
 #                             Hierarchical index
@@ -147,11 +217,6 @@ df.xs('bar')
 df.xs('bar').xs('one')
 df.xs(('bar', 'one'))
 
-
-###############################################################################
-#                                PeriodIndex
-#     Elements in PeriodIndex are Pandas's Period objects.
-###############################################################################
 
 ###############################################################################
 #                             common method

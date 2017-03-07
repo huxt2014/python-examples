@@ -58,9 +58,6 @@ s4 + s5                   # [3,5,7,NaN]
 s4 > 2                    # [False, False, True, True]
 np.exp(s4)
 
-# apply function to each element
-s.map(lambda x: x*x)
-
 # introspection #############################################
 # get 1-d array
 a = s.values
@@ -188,6 +185,10 @@ assert isinstance(df.columns, pd.Index)
 # display dtypes for all columns
 isinstance(df.dtypes, pd.Series)
 
+# iteration
+for col in df.columns:
+    series = df[col]
+
 # display dtypes and memory size
 df.info()
 
@@ -254,17 +255,6 @@ df.rename(index=['birth1', 'name1'])
 
 # drop a column/row, return a new df
 df.drop(['new_column'], axis=1)
-
-# add rows by append. may get duplicate index
-# return a new df, The resulting DataFrame will
-# consist of the union of the columns in both
-df.append(df)
-
-# concat, axis=0, like append
-pd.concat([df, df])
-
-# concat, axis=1, like join
-pd.concat([df, df], axis=1, join='inner')
 
 # sort
 df.sort_index()                       # sort by index
@@ -355,25 +345,4 @@ s = Series(np.arange(12), index=dt_index)
 s.resample('5min', closed='left').sum()   # 00, 01, 02, 03, 04 as 00
 s.resample('5min', closed='right').sum()  # 01, 02, 03, 04, 05 as 00
 
-# group by index function ####################################
-s.groupby(lambda x: x.month).sum()
-
 # up sampling ################################################
-
-
-###############################################################################
-#                              other common operator
-###############################################################################
-
-
-# drop row
-s_new = s.drop('a')
-s_new1 = s.drop(['a', 'b'])
-
-###############################################################################
-#                            iteration                                        #
-###############################################################################
-
-# iteration
-for col in df.columns:
-    series = df[col]

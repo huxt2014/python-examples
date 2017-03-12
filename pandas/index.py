@@ -217,6 +217,10 @@ df.xs('bar')
 df.xs('bar').xs('one')
 df.xs(('bar', 'one'))
 
+# select level, be careful that the level number may mix with
+# the index name
+df.xs('one', level=1)
+
 
 ###############################################################################
 #                             common method

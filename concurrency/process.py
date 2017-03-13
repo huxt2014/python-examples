@@ -116,15 +116,24 @@ print mm[:]
 
 
 ###############################################################################
-#                             fcntl  lock
+#                             file  lock
+#     The flock() system call places a single lock on the open file description.
+# Locks are automatically released when the corresponding file descriptor is
+# closed.
+#     When a file descriptor is duplicated, the new file descriptor refers
+# to the same file lock. However, if we use open() to obtain a second file
+# descriptor (and associated open file description) referring to the same file,
+# this second descriptor is treated independently by flock().
 #     These types of locks are normally maintained within the kernel, and the
 # owner of a lock is identified by its process ID.
 #     With Posix record locking, the granularity is a single byte.
 ###############################################################################
 # advisory locking################################################
-f = open('/tmp/test', 'w')
-fcntl.lockf(f.fileno(), fcntl.LOCK_EX, 0, 0, os.SEEK_SET)   # lock entire file
-fcntl.lockf(f.fileno(), fcntl.LOCK_UN)                      # unlock
+# for fcntl.LOCK_EX, w and b is needed, for fcntl.LOCK_SH, r is
+# needed.
+f = open('/tmp/test', 'wb+')
+fcntl.lockf(f, fcntl.LOCK_EX, 0, 0, os.SEEK_SET)   # lock entire file
+fcntl.lockf(f, fcntl.LOCK_UN)                      # unlock
 
 
 ###############################################################################

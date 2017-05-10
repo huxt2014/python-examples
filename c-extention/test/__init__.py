@@ -23,12 +23,16 @@ data_set = [
 data_set += [[random.randint(0, i) for j in range(i)]
              for i in range(3, 1000, 10)]
 
-big_data = [random.randint(0, 10000000) for i in range(32000)]
+big_data = [random.randint(0, 10000000) for i in range(512000)]
 big_data_set = [
     big_data[0:2000],
     big_data[0:4000],
     big_data[0:8000],
     big_data[0:16000],
+    big_data[0:32000],
+    big_data[0:64000],
+    big_data[0:128000],
+    big_data[0:256000],
     big_data
 ]
 
@@ -43,6 +47,18 @@ class CaseInsertionSort(unittest.TestCase):
 
     def test_performance(self):
         test_performance(sort_example.insertion_sort)
+
+
+class CaseMergeSort(unittest.TestCase):
+
+    def test_ref(self):
+        test_reference_count(sort_example.merge_sort)
+
+    def test_result(self):
+        test_result(sort_example.merge_sort)
+
+    def test_performance(self):
+        test_performance(sort_example.merge_sort, 9)
 
 
 def test_reference_count(func):
@@ -84,12 +100,13 @@ def test_result(func):
         assert r1 == r2, (r1, r2)
 
 
-def test_performance(func):
+def test_performance(func, num=5):
     raw_stmt = "sort_example.%s(big_data_set[%s])"
     new_t = old_t = 0
+    print()
     print(func.__name__)
 
-    for i in range(len(big_data_set)):
+    for i in range(num):
         stmt = raw_stmt % (func.__name__, i)
         old_t = new_t
         new_t = timeit.timeit(stmt, number=1, globals=globals())

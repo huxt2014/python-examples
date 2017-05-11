@@ -23,7 +23,7 @@ data_set = [
 data_set += [[random.randint(0, i) for j in range(i)]
              for i in range(3, 1000, 10)]
 
-big_data = [random.randint(0, 10000000) for i in range(512000)]
+big_data = [random.randint(0, 1000000) for i in range(1024000)]
 big_data_set = [
     big_data[0:2000],
     big_data[0:4000],
@@ -33,6 +33,7 @@ big_data_set = [
     big_data[0:64000],
     big_data[0:128000],
     big_data[0:256000],
+    big_data[0:512000],
     big_data
 ]
 
@@ -58,7 +59,19 @@ class CaseMergeSort(unittest.TestCase):
         test_result(sort_example.merge_sort)
 
     def test_performance(self):
-        test_performance(sort_example.merge_sort, 9)
+        test_performance(sort_example.merge_sort, 10)
+
+
+class CaseHeapSort(unittest.TestCase):
+
+    def test_ref(self):
+        test_reference_count(sort_example.heap_sort)
+
+    def test_result(self):
+        test_result(sort_example.heap_sort)
+
+    def test_performance(self):
+        test_performance(sort_example.heap_sort, 10)
 
 
 def test_reference_count(func):

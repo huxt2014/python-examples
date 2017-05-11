@@ -175,7 +175,125 @@ _merge(PyObject *o, Py_ssize_t l, Py_ssize_t m, Py_ssize_t r){
 
 }
 
+static int build_heap(PyObject *list, Py_ssize_t size);
+static int heapify(PyObject *list, Py_ssize_t i, Py_ssize_t size);
 
+static PyObject *
+heap_sort(PyObject *self, PyObject *o){
+
+    Py_ssize_t len, i;
+    PyObject *new_list, *result_list, *item, *item_max;
+    int result;
+
+    len = PySequence_Size(o);
+    if (len == -1)
+        return NULL;
+    else if (len < 2)
+        return PySequence_List(o);
+
+    new_list = PyList_New(len+1);
+    if (new_list == NULL)
+        return NULL;
+
+    for (i = 0; i < len; i++){
+        item = PySequence_GetItem(o, i);
+        if (item == NULL){
+            Py_DECREF(new_list);
+            return NULL;
+        }
+        PyList_SetItem(new_list, i+1, item);
+    }
+
+    result = build_heap(new_list, len);
+    if (result == -1){
+        Py_DECREF(new_list);
+        return NULL;
+    }
+
+    for(i = len; i >= 2; i--){
+        result = heapify(new_list, 1, i);
+        if (result == -1){
+            Py_DECREF(new_list);
+            return NULL;
+        }
+
+        item_max =  PyList_GetItem(new_list, 1);
+        Py_INCREF(item_max);
+        item =  PyList_GetItem(new_list, i);
+        Py_INCREF(item);
+
+        PyList_SetItem(new_list, i, item_max);
+        PyList_SetItem(new_list, 1, item);
+    }
+
+    result_list = PyList_GetSlice(new_list, 1, len+1);
+    Py_DECREF(new_list);
+
+    return result_list;
+}
+
+PyDoc_STRVAR(heap_sort_doc,  "heap sort.");
+
+static int
+heapify(PyObject *list, Py_ssize_t i, Py_ssize_t size){
+
+    Py_ssize_t l, r, max;
+    PyObject *item_l, *item_r, *item_i, *item_max;
+    int result;
+
+    l = i*2;
+    r = i*2+1;
+    max = i;
+    item_i = item_max = PyList_GetItem(list, i);
+
+    if (l <= size){
+        item_l = PyList_GetItem(list, l);
+        result = PyObject_RichCompareBool(item_max, item_l, Py_LT);
+        if (result == -1)
+            return -1;
+        else if (result == 1){
+            max = l;
+            item_max = item_l;
+        }
+    }
+
+    if (r <= size){
+        item_r = PyList_GetItem(list, r);
+        result = PyObject_RichCompareBool(item_max, item_r, Py_LT);
+        if (result == -1)
+            return -1;
+        else if (result == 1){
+            max = r;
+            item_max = item_r;
+        }
+    }
+
+    if (max != i){
+        Py_INCREF(item_max);
+        Py_INCREF(item_i);
+        PyList_SetItem(list, i, item_max);
+        PyList_SetItem(list, max, item_i);
+        
+        heapify(list, max, size);
+    }
+
+    return 0;
+}
+
+static int
+build_heap(PyObject *list, Py_ssize_t size){
+
+    Py_ssize_t i;
+    int result;
+
+    for (i = size/2; i >= 1; i--){
+        result = heapify(list, i, size);
+        if (result == -1)
+            return -1;
+    }
+    
+    return 0;
+}
 
 
 static PyMethodDef methods[] = {
@@ -183,6 +301,8 @@ static PyMethodDef methods[] = {
      insertion_sort_doc},
     {"merge_sort", (PyCFunction)merge_sort, METH_O,
      merge_sort_doc},
+    {"heap_sort", (PyCFunction)heap_sort, METH_O,
+     heap_sort_doc},
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 

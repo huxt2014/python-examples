@@ -1,24 +1,35 @@
 
 /*
+
+OBJECTS
+
+    Almost all Python objects live on the heap: you never declare an automatic
+or static variable of type PyObject. Only pointer variables of type PyObject*
+can be declared. The sole exception are the type objects; since these must never
+be deallocated, they are typically static PyTypeObject objects.
+
+    All Python objects (even Python integers) have a type and a reference count. 
+
+
 REFERENCE COUNTS
 
     Nobody “owns” an object; however, you can own a reference to an object. The
 owner of a reference is responsible for calling Py_DECREF() when the reference
 is no longer needed. 
 
-    Ownership of a reference can be transferred. There are three ways to dispose 
-of an owned reference: pass it on, store it, or call Py_DECREF().
+    Ownership of a reference can be transferred, meaning that the code that 
+receives ownership of the reference then becomes responsible for eventually
+decref’ing. 
 
     It is also possible to borrow a reference to an object. The borrower of a 
 reference should not call Py_DECREF(). The borrower must not hold on to the 
 object longer than the owner from which it was borrowed. A borrowed reference 
 can be changed into an owned reference by calling Py_INCREF().
 
-    Almost all Python objects live on the heap: you never declare an automatic
-or static variable of type PyObject, only pointer variables of type PyObject*
-can be declared. The sole exception are the type objects; since these must never
-be deallocated, they are typically static PyTypeObject objects.
-
+    Stealing a reference means that when you pass a reference to a function,
+that function assumes that it now owns that reference, and you are not
+responsible for it any longer. Before call a function that will steal the
+reference, the caller should own a reference first.
 
 FUNCTION
 
@@ -26,21 +37,20 @@ FUNCTION
 a pointer selected while initializing the module. The second parameters passed
 in will always be a tuple.
 
-    When a C function is called from Python, it borrows references to its
-arguments from the caller. 
+    When a function passes ownership of a reference on to its caller, the caller
+is said to receive a new reference. When no ownership is transferred, the caller
+is said to borrow the reference. 
 
-    When you pass an object reference into another function, in general, the 
-function borrows the reference from you, for example, PyArg_Parse* functions. 
-There are exactly two important exceptions to this rule: PyTuple_SetItem() and 
-PyList_SetItem(). These functions take over ownership of the item passed to
-them, even if they fail! 
+    Conversely, when a calling function passes in a reference to an object,  
+there are two possibilities: the function steals a reference to the object, or
+it borrows a reference.
 
-    Most functions that return a reference to an object pass on ownership with
-the reference. Many functions that extract objects from other objects also
-transfer ownership with the reference.
+    PyTuple_SetItem() and PyList_SetItem() steal a reference to the item (but 
+not to the tuple or list). These functions take over ownership of the item
+passed to them, even if they fail! When you want to keep using an object
+although the reference to it will be stolen, use Py_INCREF() to grab another
+reference before calling the reference-stealing function.
 
-
-METHOD
 */
 
 

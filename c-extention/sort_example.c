@@ -296,6 +296,93 @@ build_heap(PyObject *list, Py_ssize_t size){
 }
 
 
+static int _quick_sort(PyObject *list, Py_ssize_t l, Py_ssize_t r);
+
+static PyObject *
+quick_sort(PyObject *self, PyObject *o){
+
+    PyObject *new_list;
+    Py_ssize_t len;
+    int result;
+
+    new_list = PySequence_List(o);
+    if (new_list == NULL)
+        return NULL;
+
+    len = PyList_Size(new_list);
+    if (len < 2)
+        return new_list;
+    result = _quick_sort(new_list, 0, len-1);
+    
+    if (result == -1){
+        Py_DECREF(new_list);
+        return NULL;
+    }
+
+    return new_list;
+}
+
+PyDoc_STRVAR(quick_sort_doc,  "quick sort.");
+
+static Py_ssize_t
+_partition(PyObject *list, Py_ssize_t l, Py_ssize_t r){
+
+    int result;
+    Py_ssize_t i_s, i;
+    PyObject *item_i, *item_r, *item_s;
+
+    item_r = PyList_GetItem(list, r);
+    i_s = l - 1;
+    for (i = l; i <= r-1; i++){
+        item_i = PyList_GetItem(list, i);
+        result = PyObject_RichCompareBool(item_i, item_r, Py_LE);
+        if (result == -1){
+            return -1;
+        } else if (result == 1){
+            i_s++;
+            item_s = PyList_GetItem(list, i_s);
+            Py_INCREF(item_i);
+            Py_INCREF(item_s);
+            PyList_SetItem(list, i, item_s);
+            PyList_SetItem(list, i_s, item_i);
+        }
+    }
+
+    item_s = PyList_GetItem(list, ++i_s);
+    Py_INCREF(item_s);
+    Py_INCREF(item_r);
+    PyList_SetItem(list, r, item_s);
+    PyList_SetItem(list, i_s, item_r);
+
+    return i_s;
+}
+
+static int 
+_quick_sort(PyObject *list, Py_ssize_t l, Py_ssize_t r){
+
+    Py_ssize_t m;
+    int result;
+
+    if (r <= l)
+        return 0;
+
+    m = _partition(list, l, r);
+    if (m == -1)
+        return -1;
+    else {
+        result = _quick_sort(list, l, m-1);
+        if (result == -1)
+            return -1;
+        result = _quick_sort(list, m+1, r);
+        if (result == -1)
+            return -1;
+    }
+
+    return 0;
+}
+
+
+
 static PyMethodDef methods[] = {
     {"insertion_sort", (PyCFunction)insertion_sort, METH_O,
      insertion_sort_doc},
@@ -303,6 +390,8 @@ static PyMethodDef methods[] = {
      merge_sort_doc},
     {"heap_sort", (PyCFunction)heap_sort, METH_O,
      heap_sort_doc},
+    {"quick_sort", (PyCFunction)quick_sort, METH_O,
+     quick_sort_doc},
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 

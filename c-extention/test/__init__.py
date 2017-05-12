@@ -74,6 +74,18 @@ class CaseHeapSort(unittest.TestCase):
         test_performance(sort_example.heap_sort, 10)
 
 
+class CaseQuickSort(unittest.TestCase):
+
+    def test_ref(self):
+        test_reference_count(sort_example.quick_sort)
+
+    def test_result(self):
+        test_result(sort_example.quick_sort)
+
+    def test_performance(self):
+        test_performance(sort_example.quick_sort, 10)
+
+
 def test_reference_count(func):
     i1, i2, i3 = ('aa', 'bb', 'cc')
     local_set = [

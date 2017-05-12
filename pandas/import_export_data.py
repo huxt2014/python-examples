@@ -22,7 +22,6 @@ data5 = pd.read_csv('path', header=0,                # skip the first row
                     names=['col1', 'col2'])
 data6 = pd.read_csv('path', header=[0, 1])    # take the first 2 rows as columns
 
-
 ###############################################################################
 #                                 database
 ###############################################################################
@@ -30,7 +29,10 @@ engine = create_engine()
 query = select()
 conn = engine.connect()
 
-# through SQLAlchemy, engine is thread-safe
+# read through SQLAlchemy, engine is thread-safe
 data7 = pd.read_sql(query, engine, index_col=['col1', 'col2'])
 data8 = pd.read_sql(query, conn)         # or use connection
 
+# write through SQLAlchemy
+data7.to_sql('table_name', engine,
+             chunksize=1000, if_exists='append', index=False)

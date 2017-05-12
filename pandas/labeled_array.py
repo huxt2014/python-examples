@@ -143,12 +143,10 @@ df = pd.DataFrame(tuples, columns=['name', 'birth'])
 # from dict of list
 dict_data = {'name': ['Bob', 'John', 'Marry'],
              'birth': [1984, 1985, 1990]}
-# default index, default column order
-df1 = pd.DataFrame(dict_data)
-# reorder columns
-df2 = pd.DataFrame(dict_data, columns=['birth', 'name'])
-# specify row label
-df3 = pd.DataFrame(dict_data, index=[0, 1, 2])
+df1 = pd.DataFrame(dict_data)                   # default index and column order
+df2 = pd.DataFrame(dict_data,
+                   columns=['birth', 'name'],   # reorder columns
+                   index=[0, 1, 2])             # specify row label
 
 # from dict of dict
 dict_data = {'name': {0: 'Bob', 1: 'John', 2: 'Marry'},

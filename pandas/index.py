@@ -207,20 +207,25 @@ l3_index_n = l3_index.set_levels(['foo1', 'bar1'], level=0)
 assert l3_index_n.levels[0] == pd.Index(['foo1', 'bar1'])
 
 # select row ##################################################
-# get a Series object, whose name is the row's index
+# use iloc
 assert isinstance(df.iloc[0], pd.Series)
 
-# get several row, with l2_index
-df.xs('bar')
+# use loc and label, may raise KeyError
+print(df.loc[('bar', 'one', 'a')])        # get one row
+print(df.loc[('bar', 'one')])             # get several rows
 
-# can be chained, or pass a tuple
-df.xs('bar').xs('one')
-df.xs(('bar', 'one'))
+# use xs and label, may raise KerError
+df.xs('bar')                          # select on level 0
+df.xs('bar').xs('one')                # select on level [0, 1]
+df.xs(('bar', 'one'))                 # select on level [0, 1]
+df.xs('one', level=1)                 # chose level, be careful that the
+                                      # level number may mix with the index name
 
-# select level, be careful that the level number may mix with
-# the index name
-df.xs('one', level=1)
+df.xs(slice(1, 5))                    # use slice object to slice
 
+# drop row   ##################################################
+sub_df = df.loc[('bar', 'one')]
+df.drop(sub_df.index)
 
 ###############################################################################
 #                             common method

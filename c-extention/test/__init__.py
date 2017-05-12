@@ -10,7 +10,7 @@ for d in os.listdir("./build"):
         sys.path.append(os.path.join('build', d))
         break
 
-import sort_example
+from sort_example import insertion_sort, merge_sort, heap_sort, quick_sort
 
 
 data_set = [
@@ -41,49 +41,99 @@ big_data_set = [
 class CaseInsertionSort(unittest.TestCase):
 
     def test_ref(self):
-        test_reference_count(sort_example.insertion_sort)
+        test_reference_count(insertion_sort)
 
     def test_result(self):
-        test_result(sort_example.insertion_sort)
+        test_result(insertion_sort)
 
     def test_performance(self):
-        test_performance(sort_example.insertion_sort)
+        test_performance(insertion_sort)
 
 
 class CaseMergeSort(unittest.TestCase):
 
     def test_ref(self):
-        test_reference_count(sort_example.merge_sort)
+        test_reference_count(merge_sort)
 
     def test_result(self):
-        test_result(sort_example.merge_sort)
+        test_result(merge_sort)
 
     def test_performance(self):
-        test_performance(sort_example.merge_sort, 10)
+        test_performance(merge_sort, 10)
 
 
 class CaseHeapSort(unittest.TestCase):
 
     def test_ref(self):
-        test_reference_count(sort_example.heap_sort)
+        test_reference_count(heap_sort)
 
     def test_result(self):
-        test_result(sort_example.heap_sort)
+        test_result(heap_sort)
 
     def test_performance(self):
-        test_performance(sort_example.heap_sort, 10)
+        test_performance(heap_sort, 10)
 
 
 class CaseQuickSort(unittest.TestCase):
 
     def test_ref(self):
-        test_reference_count(sort_example.quick_sort)
+        test_reference_count(quick_sort)
 
     def test_result(self):
-        test_result(sort_example.quick_sort)
+        test_result(quick_sort)
 
     def test_performance(self):
-        test_performance(sort_example.quick_sort, 10)
+        test_performance(quick_sort, 10)
+
+
+class CaseBuiltSort(unittest.TestCase):
+
+    def test_performance(self):
+        test_performance(sorted, 10)
+
+
+class CasePythonQuick(unittest.TestCase):
+
+    def test_ref(self):
+        test_reference_count(quick_sort_in_python)
+
+    def test_result(self):
+        test_result(quick_sort_in_python)
+
+    def test_performance(self):
+        test_performance(quick_sort_in_python, 9)
+
+
+def quick_sort_in_python(o):
+    new_list = list(o)
+    _quick_sort(new_list, 0, len(o)-1)
+    return new_list
+
+
+def _partition(o, l, r):
+
+    index_s = l-1
+    for i in range(l, r):
+        if o[i] <= o[r]:
+            index_s += 1
+            tmp = o[index_s]
+            o[index_s] = o[i]
+            o[i] = tmp
+
+    index_s += 1
+    tmp = o[index_s]
+    o[index_s] = o[r]
+    o[r] = tmp
+
+    return index_s
+
+
+def _quick_sort(o, l, r):
+
+    if r > l:
+        m = _partition(o, l, r)
+        _quick_sort(o, l, m-1)
+        _quick_sort(o, m+1, r)
 
 
 def test_reference_count(func):
@@ -126,7 +176,7 @@ def test_result(func):
 
 
 def test_performance(func, num=5):
-    raw_stmt = "sort_example.%s(big_data_set[%s])"
+    raw_stmt = "%s(big_data_set[%s])"
     new_t = old_t = 0
     print()
     print(func.__name__)
@@ -135,7 +185,7 @@ def test_performance(func, num=5):
         stmt = raw_stmt % (func.__name__, i)
         old_t = new_t
         new_t = timeit.timeit(stmt, number=1, globals=globals())
-        content = ("%3sK ->" % (len(big_data_set[i])//1000), round(new_t, 3))
+        content = ("%4sK ->" % (len(big_data_set[i])//1000), round(new_t, 3))
         if i > 0:
             content += ("x%s" % round(new_t/old_t, 1),)
 

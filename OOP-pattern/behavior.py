@@ -1,7 +1,7 @@
 
 
 import sys
-import Queue as queue
+import queue
 import threading
 
 ###############################################################################
@@ -19,7 +19,7 @@ class Supervisor(object):
         self.id = id
     
     def alarm(self):
-        print '%s-th supervisor alarm.' % self.id
+        print('%s-th supervisor alarm.' % self.id)
         self.sig_alarm.send(self)
 
 
@@ -30,7 +30,7 @@ class Worker(object):
         Supervisor.sig_alarm.connect(self.on_alarm)
         
     def on_alarm(self, sup):
-        print '%s-th worker get alarm from %s-th supervisor' % (self.id, sup.id)
+        print('%s-th worker get alarm from %s-th supervisor' % (self.id, sup.id))
 
 
 s = Supervisor(1)
@@ -250,7 +250,7 @@ def skip_gen(content):
 
 for obj in (SkipObject, SkipObject2, skip_gen):
     for item in obj('hello world'):
-        print item
+        print(item)
 
 
 ###############################################################################

@@ -229,10 +229,10 @@ result.fetchone()
 result.fetchall()
 
 for row in result:
-    print row
-    print row['name'], row['email']
-    print row[0], row[1]
-    print row[user.c.name], row[user.c.email]
+    print(row)
+    print(row['name'], row['email'])
+    print(row[0], row[1])
+    print(row[user.c.name], row[user.c.email])
 
 # Implicit Execution ###########################################
 #     Implicit execution is also connectionless, but it is a

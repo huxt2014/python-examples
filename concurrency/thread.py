@@ -46,7 +46,7 @@ import time
 import random
 import threading
 from datetime import datetime
-from Queue import Queue, Empty
+from queue import Queue, Empty
 from concurrent.futures import ThreadPoolExecutor
 
 
@@ -68,7 +68,7 @@ class MyThread(threading.Thread):
         while True:
             try:
                 item = pool.get(True, 0.5)
-                print '%s-th do work: %s' % (self.id, item)
+                print('%s-th do work: %s' % (self.id, item))
                 time.sleep(0.5)
             except Empty:
                 break
@@ -81,7 +81,7 @@ for i in range(1, 4):
 for t in threads:
     t.join()
     
-print 'finish'
+print('finish')
 
 
 ###############################################################################

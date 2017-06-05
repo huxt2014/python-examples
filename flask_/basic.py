@@ -1,5 +1,5 @@
 
-from flask import Flask, url_for, request, jsonify
+from flask import Flask, url_for, request, jsonify, abort, make_response
 
 
 app = Flask(__name__)
@@ -45,7 +45,13 @@ assert url_for(show_post, post_id=1, p1=1) == 'post/1?p1=1'
 ###############################################################################
 
 def example1():
-    return jsonify(key1=1, key2=2)
+    data = 1
+    if data == 1:
+        abort(400)
+    elif data == 2:
+        return make_response('message', 200)
+    else:
+        return jsonify(key1=1, key2=2)
 
 
 ###############################################################################
@@ -58,3 +64,9 @@ def example1():
 # page is shown instead.
 username = request.form['username']
 password = request.form['password']
+
+# data ##########################################################
+# If the mimetype is application/json this will contain the
+# parsed JSON data. Otherwise this will be None.
+request.get_json(force=True,              # ignore mimetype
+                 silent=True)             # fail silently and return None

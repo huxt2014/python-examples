@@ -52,6 +52,12 @@ environ = {'REQUEST_METHOD': 'GET',
 
 request = Request(environ)
 
+# path
+assert request.path == '/'
+
+# method
+assert request.method == 'POST'
+
 # headers
 request.headers.get('Accept-Encoding', '')
 

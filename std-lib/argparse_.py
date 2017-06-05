@@ -16,8 +16,8 @@ parser.add_argument('-b', '--bar')    # optional arg with short version
 
 # parse and get result
 args = parser.parse_args()
-print args.foo
-print args.b
+print(args.foo)
+print(args.b)
 
 # print version
 parser.add_argument('--version', action='version', version='%(prog)s 2.0')
@@ -39,11 +39,11 @@ subparsers._name_parser_map['bar'] = parser_bar
 
 # bound function for sub-command by setting default
 def f_foo(*args):
-    print args
+    print(args)
 
 
 def f_bar(*args):
-    print args
+    print(args)
 
 parser_foo.set_defaults(func=f_foo)
 parser_bar.set_defaults(func=f_bar)

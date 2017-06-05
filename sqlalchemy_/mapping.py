@@ -108,6 +108,13 @@ class BaseMixin(object):
 
 
 # dynamic table name mixin
+# Declarative will always invoke declared_attr for the special
+# names __tablename__, __mapper_args__ and __table_args__ function
+# for each mapped class in the hierarchy. As for columns and
+# properties (e.g. relationships, column properties, etc.), the
+# function is invoked for the base class only in the hierarchy.
+# Using declared_attr.cascading to force the function invoked
+# for each class.
 class TableName:
     @declared_attr
     def __tablename__(cls):

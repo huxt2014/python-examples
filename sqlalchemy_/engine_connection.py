@@ -129,14 +129,14 @@ db = create_engine('mysql://localhost/test',
 connection = engine.connect()
 result2 = connection.execute(text('show databases'))
 for row in result2:
-    print row
+    print(row)
 connection.close()
 
 # use connection implicitly through engine when underlying DBAPI
 # cursor is closed, the Connection object itself is also closed.
 result3 = engine.execute(text())
 for row in result3:
-    print row
+    print(row)
     
 # close result explicitly if needed.
 result.close()

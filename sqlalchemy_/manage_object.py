@@ -76,7 +76,7 @@ user = User()
 session.add(user)
 
 for obj in session:
-    print obj
+    print(obj)
     
 assert user in session
     

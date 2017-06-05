@@ -193,8 +193,8 @@ print(user.c.user_id.nullable)
 
 # a low level interface ###############################
 insp = reflection.Inspector.from_engine(engine)
-print insp.get_table_names()
-print insp.get_view_names()
+print(insp.get_table_names())
+print(insp.get_view_names())
 
 insp.get_columns('table_name')
 

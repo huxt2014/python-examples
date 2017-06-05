@@ -50,7 +50,7 @@ w_h = open('/tmp/fifo', 'w')
 
 w_h.write('hello\n')
 w_h.close()
-print r_h.read()
+print(r_h.read())
 r_h.close()
 os.unlink('/tmp/fifo')
 
@@ -61,10 +61,10 @@ os.unlink('/tmp/fifo')
 p1, p2 = Pipe()
 
 p1.send([1, 2, 'a'])
-print p2.recv()
+print(p2.recv())
 
 p2.send_bytes('hello world', 6, 5)  # offset=6, size=5
-print p1.recv_bytes()               # get 'world'
+print(p1.recv_bytes())              # get 'world'
 
 p1.close()
 p2.close()
@@ -75,7 +75,7 @@ p2.close()
 # Pipe. So, object should be picklable.
 pool = Queue()
 pool.put(['a', 1])
-print pool.get(True)
+print(pool.get(True))
 
 
 # mmap and shared memory #########################################
@@ -91,8 +91,8 @@ p = Process(target=f, args=(num, arr))
 p.start()
 p.join()
 
-print num.value
-print arr[:]
+print(num.value)
+print(arr[:])
 
 
 # mmap and file ##################################################
@@ -101,8 +101,8 @@ with open("hello.txt", "w+") as f:
     f.flush()
     mm = mmap.mmap(f.fileno(), 0)
 
-print mm.readline()
-print mm[:5]
+print(mm.readline())
+print(mm[:5])
 
 
 def f():
@@ -112,7 +112,7 @@ p = Process(target=f)
 p.start()
 p.join()
 
-print mm[:]
+print(mm[:])
 
 
 ###############################################################################
@@ -146,11 +146,11 @@ def f(x):
     return x*x
 
 processes = Pool(2)
-print processes.map(f, range(5))
-print processes.apply(f, (10,))
+print(processes.map(f, range(5)))
+print(processes.apply(f, (10,)))
 
 r = processes.apply_async(f, (15,))
-print r.get()
+print(r.get())
 
 processes.close()
 processes.join()

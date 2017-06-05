@@ -96,7 +96,7 @@ class Dog(object):
         self.name = "Dog"
 
     def bark(self):
-        print "woof!"
+        print("woof!")
 
 
 class Cat(object):
@@ -104,7 +104,7 @@ class Cat(object):
         self.name = "Cat"
 
     def meow(self):
-        print "meow!"
+        print("meow!")
 
 
 class Adapter:

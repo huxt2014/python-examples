@@ -39,7 +39,7 @@ assert arr.size == 4
 assert np.size(arr2, 0) == arr2.shape[0]
 
 # the type
-print arr.dtype
+print(arr.dtype)
 
 # get the buff object
 buff_obj = arr.data

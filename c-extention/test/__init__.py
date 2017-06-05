@@ -185,7 +185,8 @@ def test_performance(func, num=5):
         stmt = raw_stmt % (func.__name__, i)
         old_t = new_t
         new_t = timeit.timeit(stmt, number=1, globals=globals())
-        content = ("%4sK ->" % (len(big_data_set[i])//1000), round(new_t, 3))
+        content = ("%4sK -> %6s" % ((len(big_data_set[i])//1000),
+                                    round(new_t, 3)),)
         if i > 0:
             content += ("x%s" % round(new_t/old_t, 1),)
 

@@ -66,9 +66,25 @@ standard headers on some systems, you must include Python.h before any standard
 headers are included.*/
 #include <Python.h>
 
+/* for PY2 and PY3 compatible */
+struct module_state {
+    PyObject *error;
+};
 
+#if PY_MAJOR_VERSION >= 3
+#define IS_PY3K
+#define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
+#else
+#include <bytesobject.h>         /* map PyBytes names to PyString ones*/
+#define GETSTATE(m) (&_state)
+static struct module_state _state;
+#endif
 
+/* end PY2 and PY3 compatible */
 
+/* For Python 3, the module-level function's first argument self
+ * is the module object. For Python 2, self is NULL or a pointer
+ * selected while initializing the module. */
 static PyObject *
 print_s(PyObject *self, PyObject *args){
 
@@ -208,7 +224,8 @@ static PyObject *
 inspect_list(PyObject *self, PyObject *o){
 
     PyObject *item, *file;
-    int i, len, write_err;
+    Py_ssize_t i, len;
+    int write_err;
 
     if (!PyList_Check(o)) {                        
         PyErr_SetString(PyExc_TypeError, "object is not a list");
@@ -248,7 +265,7 @@ static PyObject *
 test(PyObject *self, PyObject *o){
     PyObject *str, *file;
 
-    str = PyString_FromString(" ");
+    str = PyBytes_FromString(" ");
 
     file = PySys_GetObject("stdout");                                       
     if (file == Py_None)                                                    
@@ -262,7 +279,7 @@ test(PyObject *self, PyObject *o){
 
 
 
-static PyMethodDef BasicFuncMethods[] = {
+static PyMethodDef module_methods[] = {
     {"print_s",  print_s, METH_VARARGS,
      print_s_doc},
     {"print_two_s",  print_two_s, METH_VARARGS,
@@ -289,8 +306,59 @@ is called. The initialization function must be named initname(), where name is
 the name of the module, and should be the only non-static item defined in the 
 module file.
 */
-PyMODINIT_FUNC
-initbasic_func(void){
-    (void) Py_InitModule("basic_func", BasicFuncMethods);
+#ifdef IS_PY3K
+
+static int basic_func_traverse(PyObject *m, visitproc visit, void *arg) {
+    Py_VISIT(GETSTATE(m)->error);
+    return 0;
+}
+
+static int basic_func_clear(PyObject *m) {
+    Py_CLEAR(GETSTATE(m)->error);
+    return 0;
+}
+
+
+static struct PyModuleDef basic_func_module = {
+    PyModuleDef_HEAD_INIT,
+    "basic_func",                  /* module name */
+    "doc for basic func",          /* may be NULL */
+    sizeof(struct module_state),   /* size of per-interpreter state of the
+                                      module. -1 if module keeps state in global
+                                      variables */
+    module_methods,            /* module level function */
+    NULL,
+    basic_func_traverse,
+    basic_func_clear,
+    NULL
+};
+
+#define INITERROR return NULL
+
+PyMODINIT_FUNC      /* PyObject * in PY3*/
+PyInit_basic_func(void)
+
+#else
+#define INITERROR return
+
+PyMODINIT_FUNC      /* void in PY2 */
+initbasic_func(void)
+#endif
+{
+
+#ifdef IS_PY3K
+    PyObject *module = PyModule_Create(&basic_func_module);
+#else
+    PyObject *module = Py_InitModule("basic_func", module_methods);
+#endif
+
+    if (module == NULL)
+        INITERROR;
+    struct module_state *st = GETSTATE(module);
+    st;
+
+#ifdef IS_PY3K
+    return module;
+#endif
 }
 

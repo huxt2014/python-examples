@@ -197,6 +197,21 @@ class SingletonMeta(type):
         return cls.instance
 
 
+class singleton_c:
+    """
+    Implement the singleton pattern using class
+    """
+
+    def __init__(self, inner_cls):
+        self.inner_cls = inner_cls
+        self.instance = None
+
+    def __call__(self, *args, **kwargs):
+        if self.instance is None:
+            self.instance = self.inner_cls(*args, **kwargs)
+        return self.instance
+
+
 ###############################################################################
 #                             Prototype Pattern
 #     Create the objects from prototypical instance, usually through clone. It

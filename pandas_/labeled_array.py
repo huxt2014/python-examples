@@ -258,6 +258,9 @@ df.drop(['new_column'], axis=1)
 df.sort_index()                       # sort by index
 df.sort_values('col1')                # SQL-like order by
 
+# to dict
+df.to_dict("split")                   # support several modes
+
 ###############################################################################
 #                            Panel
 ###############################################################################

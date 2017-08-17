@@ -2,14 +2,40 @@
 
 
 /* Function can only return one value, can not return array.
- * Arguments are passed by value.
+ * Return struct is permitted. If the struct contains array,
+ * the array will be copied, too.
+
+ * Arguments are always passed by value.
  */
 
 /* Without function prototype, the compiler will perform
  * the default argument promotions, which always is not
  * what we want, and will cause error later.  */
-double func1(double a, double b);
+double func0(double a, double b);
 
+
+
+/*****************************************************************************
+ *                             const parameters
+ *****************************************************************************/
+
+/* the content that p points to can not be modified,
+ * p itself can be changed(point to another int). */
+void func11(const int *p);
+
+/* p itself can not be changed. the content that p
+ * points to can be modified. This feature isn't used
+ * very often, since function pass arguments by value.
+ * This may be useful in C++ pass by reference. */
+void func12(int * const p);
+
+/* the content of the array can not be changed. The
+ * compiler will check that no assignment appears. */
+int func22(const int a[], int len);
+
+/* if passed in an array or string, the const will not
+ * prevent the content be changed. */
+int func23(const char *s);
 
 /*****************************************************************************
  *                     array parameters and arguments
@@ -29,15 +55,6 @@ double func1(double a, double b);
  * */
 int func2(int a[], int len);
 int func21(int *a, int len);         /* same effect */
-
-/* const indicate that the array won't be changed. The
- * compiler will check that no assignment appears. */
-int func22(const int a[], int len);
-
-
-/* only indicate that the pointer s won't be changed, not
- * the array or string. */
-int func23(const char *s);
 
 
 /* When the parameter is multidimensional array, only 

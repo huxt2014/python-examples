@@ -84,6 +84,20 @@ for t in threads:
 print('finish')
 
 
+def synchronized(func):
+    """This decorator can be used for a function, just like the synchronized 
+    keyword in Java. But it will not work for method, because it create a lock
+    across all instances that use the method.
+    """
+    f_lock = threading.Lock()
+
+    def synced_func(*args, **kws):
+        with f_lock:
+            return func(*args, **kws)
+
+    return synced_func
+
+
 ###############################################################################
 #                    asynchronously executing using futures
 #     An Executor receives asynchronous work requests (in terms of a callable
@@ -136,7 +150,24 @@ finish = datetime.now()
 print(begin, submit, finish)
 
 
+###############################################################################
+#                              local attribute
+###############################################################################
 
+# from bottle
+def local_property(name=None):
+    ls = threading.local()
+    def fget(self):
+        try: return ls.var
+        except AttributeError:
+            raise RuntimeError("Request context not initialized.")
+    def fset(self, value): ls.var = value
+    def fdel(self): del ls.var
+    return property(fget, fset, fdel, name)
+
+
+class LocalRequest:
+    environ = local_property()
 
 
 

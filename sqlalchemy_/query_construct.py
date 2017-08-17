@@ -100,6 +100,9 @@ Query(User).join(Address, User.addresses)
 # entities by default. Use select_from() to specify a table.
 Query(User, Address).select_from(User).join(User.addresses)
 
+# left join
+Query(User).outerjoin(Address)
+
 # filter and filter_by, can be chained.
 query.filter_by(id=1)                  # uses keyword arguments
 query.filter(User.id == 1)             # use SQL expression object

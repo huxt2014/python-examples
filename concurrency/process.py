@@ -18,8 +18,12 @@ Synchronization primitives
 """
 
 import os
+import sys
 import mmap
 import fcntl
+import signal
+import subprocess
+from threading import Timer
 from multiprocessing import Pipe, Queue, Process, Value, Array, Pool
 
 
@@ -159,3 +163,50 @@ processes.join()
 # using futures ##################################################
 
 
+###############################################################################
+#                              other
+###############################################################################
+
+
+class SubprocessHandler:
+    def __init__(self, prefix=True):
+        """
+        :param prefix: insert sys.prefix to PATH, useful for virtualenv,
+        ``boolean`` 
+        """
+        self.stdout = None
+        self.stderr = None
+        self.rc = None
+
+        if prefix:
+            prefix_path = os.path.join(os.path.abspath(sys.prefix), 'bin')
+            if prefix_path not in os.environ['PATH'].split(':'):
+                os.environ['PATH'] = '%s:%s' % (prefix_path,
+                                                os.environ['PATH'])
+
+    def run(self, cmd, timeout=5):
+        """
+        :param cmd: command to run. Similar with cmd in subprocess.Popen, but
+        list only, ``list``.
+        :param timeout: timeout threshold, ``float``
+        """
+        timer = None
+        try:
+            p = subprocess.Popen(cmd,
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE)
+            timer = Timer(timeout, lambda process: process.kill(), args=(p,))
+            timer.start()
+            self.stdout, self.stderr = p.communicate()
+            self.rc = p.returncode
+        except Exception as e:
+            e.args = (' '.join(cmd),) + e.args
+            raise e
+        finally:
+            if timer:
+                timer.cancel()
+
+        if self.rc == -signal.SIGKILL:
+            raise TimeoutError(' '.join(cmd))
+        elif self.rc != 0:
+            raise Exception(' '.join(cmd))

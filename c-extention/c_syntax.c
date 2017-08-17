@@ -126,6 +126,14 @@ float *func5(float);     /* function */
 void (*pf)(int);         /* pointer to function */
 int *(*apf[10])(void);   /* array of pointer to function */
 
+/* In C, const means "read-only", not "constant".
+ * declaring as const has several advantages: 1) alert other
+ * developer. 2) compiler will check it. 3) the compiler will
+ * stored in ROM for certain type of application. */
+const int  c_int_1 = 10;
+const int c_array_1[] = {1, 2, 3};
+
+
 /*****************************************************************************
  *                        operaotors and expression
  ****************************************************************************/

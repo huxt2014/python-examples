@@ -121,6 +121,8 @@ utc_index = pd.date_range('2016-11-1', periods=10, freq='H',
 utc_index2 = native_index.tz_localize('UTC')
 shanghai_index = utc_index.tz_convert('Asia/Shanghai')
 
+# format #####################################################
+index5.strftime("%Y-%m-%d")
 
 # Timestamp ##################################################
 # 2017-02-24 10:50:00
@@ -213,6 +215,7 @@ assert isinstance(df.iloc[0], pd.Series)
 # use loc and label, may raise KeyError
 print(df.loc[('bar', 'one', 'a')])        # get one row
 print(df.loc[('bar', 'one')])             # get several rows
+print(df.loc[l3_index])                   # get several rows
 
 # use xs and label, may raise KerError
 df.xs('bar')                          # select on level 0
@@ -225,7 +228,7 @@ df.xs(slice(1, 5))                    # use slice object to slice
 
 # drop row   ##################################################
 sub_df = df.loc[('bar', 'one')]
-df.drop(sub_df.index)
+df.drop(sub_df.index)                    # drop by index
 
 ###############################################################################
 #                             common method

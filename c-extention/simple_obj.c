@@ -1,12 +1,14 @@
 
 #include <Python.h>
+
 /* This include provides declarations that we use to handle attributes */
 #include <structmember.h>
 
 /* each instance will contain this struct */
 typedef struct {
-    /* This head contain a refcount and a pointer to a type object. Should
-     * not add semicolon */
+    /* This head contain a refcount and a pointer to a type object.
+     * The type object determines which functions get called.
+     * Should not add semicolon. */
     PyObject_HEAD
 
     /*  Type-specific fields go here. */
@@ -18,8 +20,8 @@ typedef struct {
 
 static void
 Simple_dealloc(Simple* self){
-    /* should not use Py_DECREF, for the reason that self->first and self->last
-     * may be NULL. */
+    /* should not use Py_DECREF, for the reason that self->first
+     * and self->last may be NULL. */
     Py_XDECREF(self->first);
     Py_XDECREF(self->last);
     /* the type of self may be sub-class of Simple */
@@ -27,7 +29,10 @@ Simple_dealloc(Simple* self){
 
 }
 
-
+/* It is exposed in Python as the __new__() method.  One reason to
+ * implement a new method is to assure the initial values of
+ * instance variables. PyType_GenericNew() initializes all of the
+ * instance variable members to NULL. */
 static PyObject *
 Simple_new(PyTypeObject *type, PyObject *args, PyObject *kwargs){
 
@@ -46,8 +51,8 @@ Simple_new(PyTypeObject *type, PyObject *args, PyObject *kwargs){
         self->last = PyString_FromString("");
         if (self->last == NULL) {
             Py_DECREF(self);
-            /* we do not need to call Py_DECREF(self->first) here, because
-             * it is called in Simple_dealloc.*/
+            /* we do not need to call Py_DECREF(self->first) here,
+             * because it is called in Simple_dealloc.*/
             return NULL;
         }
 
@@ -58,7 +63,8 @@ Simple_new(PyTypeObject *type, PyObject *args, PyObject *kwargs){
 
 }
 
-
+/* exposed in Python as the __init__() method. Initializers should
+ * return either 0 on success or -1 on error. */
 static int
 Simple_init(Simple *self, PyObject *args, PyObject *kwargs) {
 
@@ -69,11 +75,11 @@ Simple_init(Simple *self, PyObject *args, PyObject *kwargs) {
                                       &first, &last, &self->number))
         return -1;
 
-    /* Initializers can be called multiple times, so be careful when assigning
-     * new values. */
+    /* Initializers can be called multiple times, so be careful
+     * when assigning new values. */
     if (first) {
-        /* do not decrease the reference to first directly, for the destructor
-         * may access the first member. */
+        /* do not decrease the reference to first directly, for
+         * the destructor may access the first member. */
         tmp = self->first;
         /* Simple_init get borrowed reference */
         Py_INCREF(first);
@@ -163,7 +169,7 @@ static PyMethodDef Simple_methods[] = {
 static PyTypeObject SimpleType = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "simple_obj.Simple",             /*  tp_name */
-    sizeof(Simple),                  /*  tp_basicsize */
+    sizeof(Simple),                  /*  tp_basicsize, for memory allocate */
     0,                               /*  tp_itemsize */
     (destructor)Simple_dealloc,      /*  tp_dealloc */
     0,                               /*  tp_print */
@@ -198,7 +204,7 @@ static PyTypeObject SimpleType = {
     0,                               /*  tp_descr_set */
     0,                               /*  tp_dictoffset */
     (initproc)Simple_init,           /*  tp_init */
-    0,                               /*  tp_alloc */
+    0,                               /*  tp_alloc, PyType_Ready() can fill it */
     Simple_new,                      /*  tp_new */
 }; 
 

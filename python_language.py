@@ -132,6 +132,17 @@ class Foo(object):
 
 
 ##############################################################################
+#                                __main__.py
+##############################################################################
+"""
+    Often, a Python program is run by naming a .py file on the command line. You
+can also create a directory or zipfile full of code, and include a __main__.py.
+Then you can simply name the directory or zipfile on the command line, and it
+executes the __main__.py automatically.
+"""
+
+
+##############################################################################
 #                            inspect
 ##############################################################################
 
@@ -147,7 +158,6 @@ print(Test.__name__)
 ##############################################################################
 
 import importlib
-import imp
 
 # import module
 os = importlib.import_module('os')              # import os

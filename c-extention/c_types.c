@@ -163,13 +163,17 @@ void type_array(void){
     int c[5] = {1};
     int d[ ] = {1, 2, 3, 4, 5};
 
-    /* C99 support designated initializers*/
+    /* C99 support designated initializers */
     int e[15] = {[2]=1, [14]=1, [9]=1};
     int f[ ] = {[2]=1, [15]=1};        /* length = 16 */
     int g[ ] = {1, 2, [6]=3, 4, [11]=1}; 
 
     /* get size */
     size_t len = sizeof(a) / sizeof(a[0]);
+
+    /* the content of the array can not be modified,
+     * the compiler will check it */
+    const char c_1[] = {'a', 'b', 'c'};
 
     /* multidimensional array. C stores it in row-major
      * order. */

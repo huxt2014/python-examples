@@ -48,6 +48,16 @@ class Engineer(Employee):
         return Employee.__table__.c.get('identical_column', Column(Integer))
 
 
+# apply further arguments within the constructor to the
+# existing Table.
+class EngineerExtend(Engineer):
+    __tablename__ = Engineer.__tablename__
+    __table_args__ = {
+        'extend_existing': True
+    }
+
+    engineer_c3 = Column(Integer)
+
 ###############################################################################
 #                          joined table inheritance
 #     In joined table inheritance, each class in a particular class's parent

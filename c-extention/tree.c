@@ -25,6 +25,9 @@ typedef struct {
 
 typedef enum{KEY, VALUE, ITEM} content_type;
 
+static PyObject *EmptyError;
+const char *empty_error_str = "tree is empty";
+
 static void
 _delete_tree(node_t *root){
     if (root == NULL){
@@ -178,12 +181,29 @@ dealloc_tree(base_tree *self){
 static PyObject *
 tree_root(base_tree *self){
     if (self->root == NULL){
+        PyErr_SetString(EmptyError, empty_error_str);
         return NULL;
     } else {
-        Py_INCREF(self->root->value);
-        return self->root->value;
+        return _get_object(self->root, ITEM);
     }
 }
+
+
+#define DEFINE_MAX_MIN(SUFFIX, IS_MAX) \
+    static PyObject * \
+    tree_##SUFFIX(base_tree *self){ \
+        node_t *node, *p; \
+        if (self->size == 0){ \
+            PyErr_SetString(EmptyError, empty_error_str); \
+            return NULL; \
+        } \
+        _min_or_max(self->root, &node, &p, IS_MAX); \
+        return _get_object(node, ITEM); \
+    } \
+
+
+DEFINE_MAX_MIN(max, 1)
+DEFINE_MAX_MIN(min, 0)
 
 
 static PyObject *
@@ -206,9 +226,9 @@ tree_subscript(base_tree *self, PyObject *key){
     return NULL;
 }
 
-#define DEFINE_GET_ALL(PREFIX,C_TYPE) \
+#define DEFINE_GET_ALL(SUFFIX,C_TYPE) \
     static PyObject * \
-    tree_##PREFIX(base_tree *self){ \
+    tree_##SUFFIX(base_tree *self){ \
         PyObject *list = PyList_New(0); \
         if (self->size == 0){ \
             return list; \
@@ -360,6 +380,10 @@ static PyMethodDef binary_methods[] = {
      "get all values "},
     {"items", (PyCFunction)tree_items, METH_NOARGS,
      "get all key-value pairs"},
+    {"max", (PyCFunction)tree_max, METH_NOARGS,
+     "get the max key-value pair"},
+    {"min", (PyCFunction)tree_min, METH_NOARGS,
+     "get the min key-value pair"},
     {NULL}  /* Sentinel */
 };
 
@@ -423,12 +447,18 @@ PyInit_tree(void)
     if (PyType_Ready(&BinaryTreeType) < 0)
         return NULL;
 
+    EmptyError = PyErr_NewException("tree.Empty", NULL, NULL);
+    if (EmptyError == NULL)
+        return NULL;
+
     m = PyModule_Create(&this_module);
     if (m == NULL)
         return NULL;
 
     Py_INCREF(&BinaryTreeType);
     PyModule_AddObject(m, "BinaryTree", (PyObject *)&BinaryTreeType);
+    Py_INCREF(EmptyError);
+    PyModule_AddObject(m, "Empty", EmptyError);
     return m;
 }
 

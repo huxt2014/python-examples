@@ -4,7 +4,7 @@ import random
 import timeit
 import unittest
 
-from tree import BinaryTree
+from tree import BinaryTree, Empty
 
 
 def random_insert_ascii(tree):
@@ -191,6 +191,41 @@ class TestBinaryTree(unittest.TestCase):
         del tree
         self.assertTrue(ref_a == sys.getrefcount("a"))
 
+    def test_max_min(self):
+
+        for i in range(10):
+            tree = self.tree_cls()
+            d = random_insert_ascii(tree)
+
+            max_key = max(d.keys())
+            max_value = chr(max_key)
+
+            min_key = min(d.keys())
+            min_value = chr(min_key)
+
+            ref_max_value = sys.getrefcount(max_value)
+            ref_min_value = sys.getrefcount(min_value)
+
+            self.assertTrue(tree.max() == (max_key, max_value))
+            self.assertTrue(tree.min() == (min_key, min_value))
+            self.assertTrue(ref_max_value == sys.getrefcount(max_value))
+            self.assertTrue(ref_min_value == sys.getrefcount(min_value))
+
+        tree = self.tree_cls()
+        with self.assertRaises(Empty):
+            tree.max()
+        with self.assertRaises(Empty):
+            tree.min()
+
+    def test_root(self):
+        tree = self.tree_cls()
+        with self.assertRaises(Empty):
+            tree.root()
+
+        ref_a = sys.getrefcount("a")
+        tree[1] = "a"
+        self.assertTrue(tree.root() == (1, "a"))
+        self.assertTrue(ref_a + 1 == sys.getrefcount("a"))
 
     def test_pop_exactly(self):
 
@@ -202,7 +237,7 @@ class TestBinaryTree(unittest.TestCase):
            5
         """
         self.assertTrue(tree.pop(20) == 20)
-        self.assertTrue(tree.root() == 10)
+        self.assertTrue(tree.root() == (10, 10))
         self.assertTrue(tree.items() == [(5, 5), (10, 10), (30, 30)])
 
         # successor is direct child and target is root
@@ -212,7 +247,7 @@ class TestBinaryTree(unittest.TestCase):
                       40
         """
         self.assertTrue(tree.pop(10) == 10)
-        self.assertTrue(tree.root() == 30)
+        self.assertTrue(tree.root() == (30, 30))
         self.assertTrue(tree.items() == [(5, 5), (30, 30), (40, 40)])
 
         # predecessor is direct child and target is not root
@@ -245,7 +280,7 @@ class TestBinaryTree(unittest.TestCase):
                13
         """
         self.assertTrue(tree.pop(20) == 20)
-        self.assertTrue(tree.root() == 15)
+        self.assertTrue(tree.root() == (15, 15))
         self.assertTrue(tree.items() == [(5, 5), (10, 10), (13, 13), (15, 15), (30, 30)])
 
         # successor is not direct child and target is root
@@ -258,7 +293,7 @@ class TestBinaryTree(unittest.TestCase):
                     27
         """
         self.assertTrue(tree.pop(10) == 10)
-        self.assertTrue(tree.root() == 25)
+        self.assertTrue(tree.root() == (25, 25))
         self.assertTrue(tree.items() == [(1, 1), (25, 25), (27, 27), (30, 30), (40, 40)])
 
         # predecessor is not direct child and target is not root
@@ -294,14 +329,14 @@ class TestBinaryTree(unittest.TestCase):
         # only left child and target is root
         insert_integer(tree, [10, 5, 1, 7])
         self.assertTrue(tree.pop(10) == 10)
-        self.assertTrue(tree.root() == 5)
+        self.assertTrue(tree.root() == (5, 5))
         self.assertTrue(tree.items() == [(1, 1), (5, 5), (7, 7)])
 
         # only right child and target is root
         tree = self.tree_cls()
         insert_integer(tree, [10, 20, 15, 25])
         self.assertTrue(tree.pop(10) == 10)
-        self.assertTrue(tree.root() == 20)
+        self.assertTrue(tree.root() == (20, 20))
         self.assertTrue(tree.items() == [(15, 15), (20, 20), (25, 25)])
 
         # only left child and target is not root

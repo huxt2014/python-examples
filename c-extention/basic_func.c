@@ -260,6 +260,102 @@ PyDoc_STRVAR(inspect_list_doc, "inspect_list(o)\n\
 print a list object");
 
 
+static PyObject *
+inspect_type(PyObject *self, PyTypeObject *type){
+
+    PyObject *o_null;
+    char *name_call=NULL, *name_alloc=NULL, *name_new=NULL, *name_init=NULL,
+         *name_get=NULL, *name_gc=NULL, *name_clear=NULL;
+
+    if (!PyType_Check(type)){
+        PyErr_SetString(PyExc_TypeError, "object is not a type or a class");
+        return NULL;
+    }
+
+    o_null = PyUnicode_FromString("NULL");
+
+    /* tp_call */
+    if (type->tp_call == PyType_Type.tp_call)
+        name_call = "type_call";
+    else if (type->tp_call == NULL)
+        name_call = "NULL";
+
+    /* tp_alloc*/
+    if (type->tp_alloc == PyType_GenericAlloc)
+        name_alloc = "PyType_GenericAlloc";
+    else if (type->tp_alloc == NULL)
+        name_alloc = "NULL";
+
+    /* tp_new */
+    if (type->tp_new == PyType_Type.tp_new)
+        name_new = "type_new";
+    else if (type->tp_new == PyBaseObject_Type.tp_new)
+        name_new = "object_new";
+    else if (type->tp_new == NULL)
+        name_new = "NULL";
+
+    /* tp_init */
+    if (type->tp_init == PyType_Type.tp_init)
+        name_init = "type_init";
+    else if (type->tp_init == PyBaseObject_Type.tp_init)
+        name_init = "object_init";
+    else if (type->tp_init == NULL)
+        name_init = "NULL";
+
+    /* tp_getattro*/
+    if (type->tp_getattro == PyType_Type.tp_getattro)
+        name_get = "type_getattro";
+    else if (type->tp_getattro == PyObject_GenericGetAttr)
+        name_get = "PyObject_GenericGetAttr";
+    else if (type->tp_getattro == NULL)
+        name_get = "NULL";
+
+    /* tp_is_gc */
+    if (type->tp_is_gc == PyType_Type.tp_is_gc)
+        name_gc = "type_is_gc";
+    else if (type->tp_is_gc == NULL)
+        name_gc = "NULL";
+
+    /* tp_clear */
+    if (type->tp_clear == PyType_Type.tp_clear)
+        name_clear = "type_clear";
+    else if (type->tp_clear == NULL)
+        name_clear = "NULL";
+
+    PyObject *content = PyUnicode_FromFormat(
+                            "ob_type: %S\n"
+                            "tp_basicsize: %zi\ntp_itemsize: %zi\n"
+                            "tp_call: %s\ntp_getattro: %s\n"
+                            "tp_clear: %s\ntp_weaklistoffset: %zi\n"
+                            "tp_base: %S\ntp_dict: %S\ntp_dictoffset: %zi\n"
+                            "tp_init: %s\ntp_alloc: %s\ntp_new: %s\n"
+                            "tp_is_gc: %s\n"
+                            "tp_bases: %S\n",
+                            (PyObject *)Py_TYPE(type),
+                            type->tp_basicsize, type->tp_itemsize,
+                            name_call == NULL ? "unknown" : name_call,
+                            name_get == NULL ? "unknown" : name_get,
+                            name_clear == NULL ? "unknown" : name_clear,
+                            type->tp_weaklistoffset,
+                            type->tp_base == NULL ? o_null:(PyObject *)(type->tp_base),
+                            type->tp_dict == NULL ? o_null:(PyObject *)(type->tp_dict),
+                            type->tp_dictoffset,
+                            name_init == NULL ? "unknown" : name_init,
+                            name_alloc == NULL ? "unknown" : name_alloc,
+                            name_new == NULL ? "unknown" : name_new,
+                            name_gc == NULL ? "unknown" : name_gc,
+                            (PyObject *)(type->tp_bases)
+                        );
+
+    PyObject_Print(content, stdout, Py_PRINT_RAW);
+    fflush(stdout);
+
+    Py_DECREF(o_null);
+    Py_RETURN_NONE;
+}
+
+PyDoc_STRVAR(inspect_type_doc, "inspect_type(o)\n\
+print type, tp_base, tp_bases of a type");
 
 static PyObject *
 test(PyObject *self, PyObject *o){
@@ -293,6 +389,8 @@ static PyMethodDef module_methods[] = {
      inspect_dict_doc},
     {"inspect_list",  (PyCFunction)inspect_list, METH_O,
      inspect_list_doc},
+    {"inspect_type",  (PyCFunction)inspect_type, METH_O,
+     inspect_type_doc},
     {"test",  test, METH_VARARGS,
      NULL},
     {NULL, NULL, 0, NULL}        /* Sentinel */
@@ -319,6 +417,7 @@ static int basic_func_clear(PyObject *m) {
 }
 
 
+/* PY3 should hove a module definition structure */
 static struct PyModuleDef basic_func_module = {
     PyModuleDef_HEAD_INIT,
     "basic_func",                  /* module name */
@@ -326,7 +425,7 @@ static struct PyModuleDef basic_func_module = {
     sizeof(struct module_state),   /* size of per-interpreter state of the
                                       module. -1 if module keeps state in global
                                       variables */
-    module_methods,            /* module level function */
+    module_methods,                /* module level function */
     NULL,
     basic_func_traverse,
     basic_func_clear,
@@ -358,6 +457,7 @@ initbasic_func(void)
     st;
 
 #ifdef IS_PY3K
+    /* PY3 should return the module object */
     return module;
 #endif
 }

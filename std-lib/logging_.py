@@ -1,5 +1,6 @@
 
 
+import socket
 import logging.config
 
 
@@ -37,6 +38,12 @@ logger_config = {
             'class': 'logging.StreamHandler',
             'formatter': 'basic',
             'level': 'INFO'
+            },
+        "syslog_unix": {
+            "class": "logging.handlers.SysLogHandler",
+            "formatter": "basic",
+            "address": "/dev/log",          # use AF_UNIX if passed a str
+            "socktype": socket.SOCK_DGRAM
             }
         },
     'root': {
@@ -57,6 +64,11 @@ logger_config = {
     'disable_existing_loggers': False
     }
 logging.config.dictConfig(logger_config)
+
+
+# file-based configuration #################################
+# Besides dict-based, there is also file-based configuration,
+# using fileConfig(). For detail, refer to the document.
 
 ################################################################################
 #                                 basic usage
